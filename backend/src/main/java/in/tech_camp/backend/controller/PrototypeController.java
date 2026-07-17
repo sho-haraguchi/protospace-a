@@ -1,10 +1,29 @@
 package in.tech_camp.backend.controller;
 
+import org.springframework.web.bind.annotation.RestController;
+
+import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.service.PrototypeService;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+
+@RestController
 public class PrototypeController {
-    
-  /**
+  private final PrototypeService prototypeService;
+  public PrototypeController(PrototypeService prototypeService) {
+        this.prototypeService = prototypeService;
+    }
+    /**
    * プロトタイプ一覧表示機能（showPrototypes）
    */
+  @GetMapping("/api/prototypes")
+    public List<PrototypeEntity> showPrototypes() {
+        return prototypeService.findAllPrototypes(); 
+    }
+}
+
 
 
 
@@ -41,4 +60,4 @@ public class PrototypeController {
   /**
    * プロトタイプ削除処理（deletePrototype）
    */
-}
+
