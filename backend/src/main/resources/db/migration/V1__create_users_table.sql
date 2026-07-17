@@ -1,0 +1,10 @@
+CREATE TABLE users (
+  id SERIAL NOT NULL,
+  name VARCHAR(256) NOT NULL,
+  email VARCHAR(256) NOT NULL,
+  password VARCHAR(512) NOT NULL,
+  profile VARCHAR(512) NOT NULL,
+  affiliation VARCHAR(256) NOT NULL,
+  position VARCHAR(256) NOT NULL,
+  PRIMARY KEY (id)
+);
