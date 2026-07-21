@@ -21,3 +21,8 @@ backend/pictweet-frontend/tsconfig.json
 backend/src/main/resources/application.properties
 backend/src/main/resources/application.properties
 backend/src/main/resources/application.properties
+backend/src/main/resources/application.properties
+backend/pictweet-frontend/app/login/page.tsx
+frontend/package-lock.json
+frontend/jest.setup.js
+frontend/package.json
