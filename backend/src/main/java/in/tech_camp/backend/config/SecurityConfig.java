@@ -23,26 +23,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/css/**", "/images/**", "/", "/api/users/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user").permitAll()
                         .anyRequest().authenticated());
                 
-               // .formLogin(login -> login
-                       // .loginProcessingUrl("/login")
-                       // .loginPage("/users/login")
-                       // .defaultSuccessUrl("/", true)
-                       // .failureUrl("/login?error")
-                       // .usernameParameter("email") 
-                       // .permitAll())
-               // .logout(logout -> logout
-                       // .logoutUrl("/logout")
-                       // .logoutSuccessUrl("/"));
 
         return http.build();
     }

@@ -1,5 +1,8 @@
 package in.tech_camp.backend;
 
+import javax.sql.DataSource;
+
+import org.flywaydb.core.Flyway;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.context.annotation.Bean;
@@ -17,5 +20,15 @@ public class TestcontainersConfiguration {
                 .withDatabaseName("proto_db_test")
                 .withUsername("postgres")
                 .withPassword("postgres");
+    }
+
+    // テスト環境用の Flyway 設定
+    @Bean(initMethod = "migrate")
+    public Flyway flyway(DataSource dataSource) {
+        return Flyway.configure()
+                .dataSource(dataSource)
+                .locations("classpath:db/migration")
+                .baselineOnMigrate(true)
+                .load();
     }
 }

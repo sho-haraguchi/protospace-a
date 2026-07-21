@@ -62,7 +62,7 @@ public class UserController {
 
   /**
    * ログイン処理（API）
-   * Next.jsから送られてきたログイン情報を受け取って認証します。
+   * Next.jsから送られてきたログイン情報を受け取って認証。
    */
   @PostMapping("login")
   public ResponseEntity<?> login(@Validated @RequestBody LoginForm loginForm, BindingResult bindingResult) {

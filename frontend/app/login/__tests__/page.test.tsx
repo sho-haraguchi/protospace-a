@@ -3,17 +3,17 @@ import userEvent from '@testing-library/user-event';
 import LoginPage from '../page';
 
 // --- モックのセットアップ ---
-// 1. fetchAPIのモック化
+// fetchAPIのモック化
 global.fetch = jest.fn();
 
-// 2. localStorageのモック化
+// localStorageのモック化
 const mockSetItem = jest.fn();
 Object.defineProperty(window, 'localStorage', {
   value: { setItem: mockSetItem },
   writable: true,
 });
 
-// 3. window.locationのモック化 (JSDOM環境でhrefを変更できるようにする)
+// window.locationのモック化 (JSDOM環境でhrefを変更できるようにする)
 const originalLocation = window.location;
 beforeAll(() => {
   Object.defineProperty(window, 'location', {
@@ -48,7 +48,7 @@ describe('LoginPage', () => {
     render(<LoginPage />);
 
     // 入力と送信
-    // ※ label と input が紐付いていないため、placeholder で要素を取得します
+    // ※ label と input が紐付いていないため、placeholder で要素を取得
     await userEvent.type(screen.getByPlaceholderText('example@example.com'), 'test@example.com');
     await userEvent.type(screen.getByPlaceholderText('パスワードを入力'), 'password123');
     await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
@@ -93,7 +93,7 @@ describe('LoginPage', () => {
   });
 
   test('3. 異常系(JSON解析エラーなど・メッセージなし): APIがメッセージ無しでエラーを返した場合、デフォルトエラーが表示されること', async () => {
-    // 準備: JSONが返ってこない場合（例外発生シミュレート）
+    // 準備: JSONが返ってこない場合
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: async () => { throw new Error('Unexpected token'); }, 

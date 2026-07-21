@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import styles from './signup.module.css';
 
+// 状態管理（State）の定義
 export default function SignUpPage() {
+  // 入力フォームの各項目の値を保持するためのState
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -11,22 +13,28 @@ export default function SignUpPage() {
   const [profile, setProfile] = useState('');
   const [affiliation, setAffiliation] = useState('');
   const [position, setPosition] = useState('');
+
+  // 画面に表示する成功・エラーメッセージを保持するState
   const [message, setMessage] = useState('');
 
+  // フォーム送信時の処理
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // パスワードとパスワード（確認）は、値の一致が必須であること
     if (password !== passwordConfirmation) {
       setMessage('❌ パスワードが一致しません。');
       return;
     }
 
     try {
+      // バックエンドの新規登録API（Spring Boot）へリクエストを送信
       const response = await fetch('http://localhost:8080/api/users', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        // 入力されたStateの値をJSON形式に変換して送信
         body: JSON.stringify({ 
           email, 
           password, 
@@ -38,6 +46,7 @@ export default function SignUpPage() {
         }),
       });
 
+      // APIからのレスポンスをJSONとして解析
       let data: any = null;
       try {
         data = await response.json();
@@ -45,9 +54,12 @@ export default function SignUpPage() {
         // レスポンス解析エラー対策
       }
 
+      // レスポンス結果に応じた画面の更新
       if (response.ok) {
+        // HTTPステータスが200番台（成功）の場合
         setMessage('🎉 登録が完了しました！');
 
+        // 登録完了後、フォームの入力をすべてクリアする
         setEmail('');
         setPassword('');
         setPasswordConfirmation('');
@@ -56,11 +68,14 @@ export default function SignUpPage() {
         setAffiliation('');
         setPosition('');
       } else {
+        // HTTPステータスがエラー（重複エラーやバリデーションエラーなど）の場合
+        // バックエンドから返ってきたエラーの形式に合わせてメッセージを抽出
         if (typeof data === 'string') {
           setMessage(`❌ ${data}`);
         } else if (data?.message) {
           setMessage(`❌ ${data.message}`);
         } else if (typeof data === 'object' && data !== null) {
+          // 複数のバリデーションエラーがオブジェクトで返ってきた場合、繋げて表示
           const errorMsg = Object.values(data).join(' / ');
           setMessage(`❌ ${errorMsg}`);
         } else {
@@ -68,11 +83,13 @@ export default function SignUpPage() {
         }
       }
     } catch (error) {
+      // ネットワークエラー（サーバーが起動していない等）の場合
       console.error(error);
       setMessage('⚠️ サーバーとの通信に失敗しました。');
     }
   };
 
+  // 画面のUI
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>ユーザー新規登録</h2>
