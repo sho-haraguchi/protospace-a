@@ -1,0 +1,102 @@
+/* app/signup/signup.module.css */
+.container {
+  width: 100%;
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 20px; /* 👈 左側にしっかり余白を作る */
+  box-sizing: border-box;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: calc(100vh - 100px);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 24px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.label {
+  font-size: 13px;
+  color: #333333;
+  margin-bottom: 4px;
+}
+
+/* 短い入力欄 */
+.inputShort {
+  width: 240px !important;
+  height: 28px !important;
+  border: 1px solid #767676 !important;
+  border-radius: 2px !important;
+  padding: 0 6px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  background-color: #ffffff !important;
+}
+
+.inputShort:focus {
+  outline: none !important;
+  border: 2px solid #000000 !important;
+}
+
+/* 横長のテキストエリア */
+.textarea {
+  width: 500px !important;
+  height: 48px !important;
+  border: 1px solid #767676 !important;
+  border-radius: 2px !important;
+  padding: 6px !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  resize: vertical !important;
+  background-color: #ffffff !important;
+}
+
+.textarea:focus {
+  outline: none !important;
+  border: 2px solid #000000 !important;
+}
+
+/* 新規登録ボタン */
+.submitBtn {
+  width: 90px !important;
+  height: 32px !important;
+  background-color: #8ecbf5 !important; /* 水色 */
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  border: none !important;
+  border-radius: 2px !important;
+  cursor: pointer !important;
+  margin-top: 8px !important;
+  display: inline-block !important;
+  text-align: center !important;
+}
+
+.submitBtn:hover {
+  background-color: #7abceb !important;
+}
+
+.errorMessage {
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #d32f2f;
+  font-weight: bold;
+}
