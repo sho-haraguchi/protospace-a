@@ -7,11 +7,9 @@ import in.tech_camp.backend.service.PrototypeService;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class PrototypeController {
   private final PrototypeService prototypeService;
   public PrototypeController(PrototypeService prototypeService) {
