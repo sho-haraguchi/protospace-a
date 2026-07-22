@@ -24,7 +24,7 @@ const PrototypeCard = ({ prototype }: PrototypeCardProps) => {
       <p className="text-gray-600 mb-4 text-sm flex-grow">{prototype.slogan}</p>
       {/* 投稿者名 */}
       <div className="text-right text-sm text-gray-400 mt-auto">
-        <Link href={`/user/${prototype.id}`} className="hover:underline">
+        <Link href={`/user/${prototype.user?.id}`} className="hover:underline">
           by {prototype.user?.name}
         </Link>
       </div>

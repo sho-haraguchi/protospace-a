@@ -16,6 +16,7 @@ public interface PrototypeRepository {
           "JOIN users ON prototypes.user_id = users.id")
     @Results({
       //"user_name" として取得した投稿者の名前を"user"フィールドの"name"フィールドにセット
+      @Result(property = "user.id", column = "user_id"),
       @Result(property = "user.name", column = "user_name")
     })
   List<PrototypeEntity> findAll();
