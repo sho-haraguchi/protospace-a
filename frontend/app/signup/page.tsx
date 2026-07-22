@@ -4,6 +4,8 @@ import { useState } from 'react';
 import axios from 'axios';
 import styles from './signup.module.css';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
 // 状態管理（State）の定義
 export default function SignUpPage() {
   // 入力フォームの各項目の値を保持するためのState
@@ -30,8 +32,8 @@ export default function SignUpPage() {
 
     try {
       // バックエンドの新規登録API（Spring Boot）へリクエストを送信
-      // axios は第2引数にオブジェクトを渡すだけで自動的に JSON 化して送信します
-      await axios.post('http://localhost:8080/api/users', { 
+      // axios は第2引数にオブジェクトを渡すだけで自動的に JSON 化して送信
+      await axios.post(`${API_BASE_URL}/api/users`, {
         email, 
         password, 
         passwordConfirmation,

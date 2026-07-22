@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import styles from './Header.module.css';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 interface User {
   id: number;
@@ -11,47 +13,30 @@ interface User {
 }
 
 export default function Header() {
-  const [user, setUser] = useState<User | null>(null);
-  const router = useRouter();
-
-  const checkLoginStatus = () => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        setUser(null);
-      }
-    } else {
-      setUser(null);
-    }
-  };
+  const [user, setUser] = useState<{ name: string } | null>(null);
 
   useEffect(() => {
-    checkLoginStatus();
-
-    const handleStorageChange = () => {
-      checkLoginStatus();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        console.error('Failed to parse user from localStorage', e);
+      }
+    }
   }, []);
 
   const handleLogout = async () => {
     try {
-      // バックエンドのログアウトAPIを呼ぶ
-      await fetch('http://localhost:8080/api/users/logout', { method: 'POST' });
+      // クッキー（JSESSIONID）を送信してサーバー側でもセッション破棄するために withCredentials を追加
+      await axios.post(`${API_BASE_URL}/api/users/logout`, {}, { withCredentials: true });
     } catch (e) {
       console.error('ログアウト通信エラー:', e);
     } finally {
       // 画面側の状態をクリア
       localStorage.removeItem('user');
       setUser(null);
-      router.push('/login'); // ログアウト後はログイン画面に飛ばすのがおすすめ
-      router.refresh();
+      window.location.href = '/login';
     }
   };
 
@@ -86,7 +71,7 @@ export default function Header() {
               <Link href="/login" className={styles.btn}>
                 ログイン
               </Link>
-              {/* 🌟 URLを /register から、今回作った /signup に変更 */}
+              {/* URLを /register から、今回作った /signup に変更 */}
               <Link href="/signup" className={styles.btn}>
                 新規登録
               </Link>

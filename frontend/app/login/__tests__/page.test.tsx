@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import LoginPage from '../page';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
 // --- モックのセットアップ ---
 // axiosのモック化
 jest.mock('axios');
@@ -54,13 +56,14 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByPlaceholderText('パスワードを入力'), 'password123');
     await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
-    // 検証: 正しいURLとパラメータでaxiosが呼ばれたか
+    // 検証: 正しいURLとパラメータでaxiosが呼ばれたか（環境変数を使用）
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(
-        'http://localhost:8080/api/users/login',
-        { email: 'test@example.com', password: 'password123' }
-      );
-    });
+       expect(mockedAxios.post).toHaveBeenCalledWith(
+          `${API_BASE_URL}/api/users/login`,
+          { email: 'test@example.com', password: 'password123' },
+          { withCredentials: true } 
+       );
+     }); 
 
     // 検証: localStorageにデータが保存されたか
     expect(mockSetItem).toHaveBeenCalledWith('user', JSON.stringify(mockUser));

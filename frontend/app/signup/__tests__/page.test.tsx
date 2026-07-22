@@ -3,6 +3,8 @@ import SignUpPage from '../page';
 import '@testing-library/jest-dom';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
 // axios のモック（ダミー化）
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -69,7 +71,7 @@ describe('SignUpPage Component', () => {
 
     // APIリクエストのパラメータを検証
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/api/users', {
+      expect(mockedAxios.post).toHaveBeenCalledWith(`${API_BASE_URL}/api/users`, {
         email: 'test@example.com',
         password: 'password123',
         passwordConfirmation: 'password123',

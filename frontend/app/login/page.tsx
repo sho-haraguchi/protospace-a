@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import axios from 'axios';
 import styles from './login.module.css';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,14 +16,21 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      // axios ではリクエスト送信とレスポンス取得を1ステップで行えます
-      const response = await axios.post('http://localhost:8080/api/users/login', {
-        email,
-        password,
-      });
+      // axios ではリクエスト送信とレスポンス取得を1ステップで行える
+      // セッションCookie（JSESSIONID）をやり取りするために withCredentials: true を設定
+      const response = await axios.post(
+        `${API_BASE_URL}/api/users/login`,
+        {
+          email,
+          password,
+        },
+        {
+          withCredentials: true,
+        }
+      );
 
       // ログイン成功時、ユーザー情報をlocalStorageに保存
-      // axios の場合、レスポンスデータは response.data に入ります
+      // axios の場合、レスポンスデータは response.data に入る
       localStorage.setItem('user', JSON.stringify(response.data));
 
       // トップページへ遷移
@@ -31,7 +40,7 @@ export default function LoginPage() {
       console.error(error);
 
       // ログイン失敗時
-      // axios は 400 や 500 系のエラー時に自動的に catch ブロックへ移動します
+      // axios は 400 や 500 系のエラー時に自動的に catch ブロックへ移動
       if (error.response?.data?.message) {
         setMessage(`❌ ${error.response.data.message}`);
       } else {
