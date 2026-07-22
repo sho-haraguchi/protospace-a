@@ -1,10 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import axios from 'axios';
+import { apiClient } from '@/lib/api/client';
 import styles from './signup.module.css';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 
 // 状態管理（State）の定義
 export default function SignUpPage() {
@@ -31,9 +29,7 @@ export default function SignUpPage() {
     }
 
     try {
-      // バックエンドの新規登録API（Spring Boot）へリクエストを送信
-      // axios は第2引数にオブジェクトを渡すだけで自動的に JSON 化して送信
-      await axios.post(`${API_BASE_URL}/api/users`, {
+      const response = await apiClient.post('/users', {
         email, 
         password, 
         passwordConfirmation,
@@ -43,21 +39,11 @@ export default function SignUpPage() {
         position
       });
 
-      // HTTPステータスが200番台（成功）の場合
-      setMessage('🎉 登録が完了しました！');
-
-      // 登録完了後、フォームの入力をすべてクリアする
-      setEmail('');
-      setPassword('');
-      setPasswordConfirmation('');
-      setName('');
-      setProfile('');
-      setAffiliation('');
-      setPosition('');
+      if (response.status === 201 || response.status === 200) {
+        window.location.href = '/';
+      }
 
     } catch (error: any) {
-      // HTTPステータスがエラー（重複エラーやバリデーションエラーなど）またはネットワークエラーの場合
-      // axios はエラー発生時に catch へ移動するため、ここでエラーレスポンスを判定します
       console.error(error);
 
       const data = error.response?.data;
@@ -68,7 +54,6 @@ export default function SignUpPage() {
       } else if (data?.message) {
         setMessage(`❌ ${data.message}`);
       } else if (typeof data === 'object' && data !== null) {
-        // 複数のバリデーションエラーがオブジェクトで返ってきた場合、繋げて表示
         const errorMsg = Object.values(data).join(' / ');
         setMessage(`❌ ${errorMsg}`);
       } else {

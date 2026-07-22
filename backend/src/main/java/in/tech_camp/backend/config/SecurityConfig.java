@@ -34,11 +34,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/css/**", "/images/**", "/").permitAll()
+                        
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
                         .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
-                        // ▼ あなたの追加分：プロトタイプ投稿関連のパスを許可に追加
-                        .requestMatchers("/app/prototypes/**").permitAll()
-                        // ▲ 認証が必要な設定をそのまま残す
+                        .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
+
                         .anyRequest().authenticated());
 
         return http.build();
