@@ -15,11 +15,6 @@ public interface PrototypeRepository {
           "FROM prototypes " +
           "JOIN users ON prototypes.user_id = users.id")
     @Results({
-      @Result(property = "id", column = "id"),
-      @Result(property = "name", column = "name"),
-      @Result(property = "slogan", column = "slogan"),
-      @Result(property = "image", column = "image"),
-      @Result(property = "concept", column = "concept"),
       //"user_name" として取得した投稿者の名前を"user"フィールドの"name"フィールドにセット
       @Result(property = "user.name", column = "user_name")
     })
