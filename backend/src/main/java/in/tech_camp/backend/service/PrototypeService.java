@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class PrototypeService {
-    private final StorageService storageService; 
+
+    private final StorageService storageService;
+    private final PrototypeRepository prototypeRepository;
 
     /**
      * 新規プロトタイプの登録処理
@@ -37,17 +39,18 @@ public class PrototypeService {
 
         return prototype;
     }
-}
-  // Repositoryを使うためにフィールドを宣言
-  private final PrototypeRepository prototypeRepository;
-  
-  // Controllerから呼び出されるメソッド
-  public List<PrototypeEntity> findAllPrototypes() {
+
+    /**
+     * プロトタイプ一覧取得
+     */
+    public List<PrototypeEntity> findAllPrototypes() {
         return prototypeRepository.findAll();
     }
 
-  // プロトタイプ詳細画面表示
-  public PrototypeEntity findById(Integer id) {
-    return prototypeRepository.findById(id);
-  }
+    /**
+     * プロトタイプ詳細取得
+     */
+    public PrototypeEntity findById(Integer id) {
+        return prototypeRepository.findById(id);
+    }
 }
