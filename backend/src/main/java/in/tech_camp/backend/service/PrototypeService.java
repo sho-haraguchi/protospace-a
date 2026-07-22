@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.repository.PrototypeRepository;
 import lombok.RequiredArgsConstructor;
@@ -52,5 +53,27 @@ public class PrototypeService {
      */
     public PrototypeEntity findById(Integer id) {
         return prototypeRepository.findById(id);
+    }
+
+    @Transactional
+    public PrototypeEntity updatePrototype(Integer id, PrototypeEditForm form) throws IOException {
+        // データベースから現在のデータを取得
+        PrototypeEntity prototype = prototypeRepository.findById(id);
+
+        // 新しいデータで上書き
+        prototype.setName(form.getName());
+        prototype.setSlogan(form.getSlogan());
+        prototype.setConcept(form.getConcept());
+
+        // ユーザーが新しく画像をアップロードした場合のみ、画像の保存と上書きを行う
+        if (form.getImage() != null && !form.getImage().isEmpty()) {
+            String savedFileName = storageService.storeFile(form.getImage());
+            prototype.setImage(savedFileName);
+        }
+
+        // 更新されたデータをDBに保存
+        prototypeRepository.update(prototype);
+        
+        return prototype;
     }
 }
