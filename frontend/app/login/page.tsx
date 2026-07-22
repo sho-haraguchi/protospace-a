@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from "react";
+import axios from 'axios';
 import styles from './login.module.css';
 
 export default function LoginPage() {
@@ -13,39 +14,29 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:8080/api/users/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password}),
+      // axios ではリクエスト送信とレスポンス取得を1ステップで行えます
+      const response = await axios.post('http://localhost:8080/api/users/login', {
+        email,
+        password,
       });
 
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        // サーバーが空のレスポンス（403など）を返した場合はここを通る
-        console.warn('JSONの解析をスキップしました');
-      }
+      // ログイン成功時、ユーザー情報をlocalStorageに保存
+      // axios の場合、レスポンスデータは response.data に入ります
+      localStorage.setItem('user', JSON.stringify(response.data));
 
-      if (response.ok) {
-        // ログイン成功時、ユーザー情報をlocalStorageに保存
-        localStorage.setItem('user', JSON.stringify(data));
+      // トップページへ遷移
+      window.location.href = '/';
 
-        // トップページへ遷移
-        window.location.href = '/';
-      } else {
-        // ログイン失敗時
-       if (data?.message) {
-          setMessage(`❌ ${data.message}`);
-        } else {
-          setMessage('❌ ログインに失敗しました。メールアドレスまたはパスワードを確認してください。');
-        }
-      }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      setMessage('⚠️ サーバーとの通信に失敗しました。')
+
+      // ログイン失敗時
+      // axios は 400 や 500 系のエラー時に自動的に catch ブロックへ移動します
+      if (error.response?.data?.message) {
+        setMessage(`❌ ${error.response.data.message}`);
+      } else {
+        setMessage('❌ ログインに失敗しました。メールアドレスまたはパスワードを確認してください。');
+      }
     }
   };
 

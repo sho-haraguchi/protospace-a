@@ -1,10 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import LoginPage from '../page';
+import axios from 'axios';
 
 // --- モックのセットアップ ---
-// fetchAPIのモック化
-global.fetch = jest.fn();
+// axiosのモック化
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // localStorageのモック化
 const mockSetItem = jest.fn();
@@ -40,9 +42,8 @@ describe('LoginPage', () => {
   test('1. 正常系: 正しい情報でログインするとlocalStorageに保存され、トップページに遷移すること', async () => {
     // 準備: API通信が成功する設定
     const mockUser = { id: 1, name: 'テストユーザー', email: 'test@example.com' };
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockUser,
+    mockedAxios.post.mockResolvedValueOnce({
+      data: mockUser,
     });
 
     render(<LoginPage />);
@@ -53,14 +54,11 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByPlaceholderText('パスワードを入力'), 'password123');
     await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
-    // 検証: 正しいURLとパラメータでfetchが呼ばれたか
+    // 検証: 正しいURLとパラメータでaxiosが呼ばれたか
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(mockedAxios.post).toHaveBeenCalledWith(
         'http://localhost:8080/api/users/login',
-        expect.objectContaining({
-          method: 'POST',
-          body: JSON.stringify({ email: 'test@example.com', password: 'password123' }),
-        })
+        { email: 'test@example.com', password: 'password123' }
       );
     });
 
@@ -73,9 +71,10 @@ describe('LoginPage', () => {
 
   test('2. 異常系(APIエラー・メッセージあり): APIがエラーメッセージを返した場合、画面に表示されること', async () => {
     // 準備: ログイン失敗 ＆ エラーメッセージが存在する場合
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: 'メールアドレスが存在しません' }),
+    mockedAxios.post.mockRejectedValueOnce({
+      response: {
+        data: { message: 'メールアドレスが存在しません' },
+      },
     });
 
     render(<LoginPage />);
@@ -93,10 +92,11 @@ describe('LoginPage', () => {
   });
 
   test('3. 異常系(JSON解析エラーなど・メッセージなし): APIがメッセージ無しでエラーを返した場合、デフォルトエラーが表示されること', async () => {
-    // 準備: JSONが返ってこない場合
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      json: async () => { throw new Error('Unexpected token'); }, 
+    // 準備: JSONが返ってこない場合（または message プロパティが存在しないエラーレスポンス）
+    mockedAxios.post.mockRejectedValueOnce({
+      response: {
+        data: {},
+      },
     });
 
     render(<LoginPage />);
@@ -112,8 +112,8 @@ describe('LoginPage', () => {
   });
 
   test('4. 異常系(ネットワークエラー): サーバー通信失敗時にエラーメッセージが表示されること', async () => {
-    // 準備: サーバーが落ちている等で fetch 自体が失敗する場合
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network Error'));
+    // 準備: サーバーが落ちている等で axios 自体が失敗する場合（responseが存在しないエラー）
+    mockedAxios.post.mockRejectedValueOnce(new Error('Network Error'));
 
     render(<LoginPage />);
 
@@ -122,6 +122,6 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'ログイン' }));
 
     // 検証: catchブロックのエラーメッセージが表示されること
-    expect(await screen.findByText('⚠️ サーバーとの通信に失敗しました。')).toBeInTheDocument();
+    expect(await screen.findByText('❌ ログインに失敗しました。メールアドレスまたはパスワードを確認してください。')).toBeInTheDocument();
   });
 });

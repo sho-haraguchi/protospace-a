@@ -1,9 +1,11 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import SignUpPage from '../page';
 import '@testing-library/jest-dom';
+import axios from 'axios';
 
-// fetch のモック（ダミー化）
-global.fetch = jest.fn();
+// axios のモック（ダミー化）
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('SignUpPage Component', () => {
   beforeEach(() => {
@@ -39,15 +41,14 @@ describe('SignUpPage Component', () => {
     // エラーメッセージの確認
     expect(await screen.findByText('❌ パスワードが一致しません。')).toBeInTheDocument();
     
-    // API通信（fetch）が一度も実行されていないことを検証
-    expect(global.fetch).not.toHaveBeenCalled();
+    // API通信（axios）が一度も実行されていないことを検証
+    expect(mockedAxios.post).not.toHaveBeenCalled();
   });
 
   test('3. 正常に入力して登録が成功した場合、成功メッセージが表示されフォームがクリアされること', async () => {
     // APIが成功レスポンス（200 OK）を返すように設定
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ message: 'Success' }),
+    mockedAxios.post.mockResolvedValueOnce({
+      data: { message: 'Success' },
     });
 
     render(<SignUpPage />);
@@ -68,19 +69,15 @@ describe('SignUpPage Component', () => {
 
     // APIリクエストのパラメータを検証
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith('http://localhost:8080/api/users', expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'test@example.com',
-          password: 'password123',
-          passwordConfirmation: 'password123',
-          name: 'テストユーザー',
-          profile: '',
-          affiliation: '',
-          position: '',
-        }),
-      }));
+      expect(mockedAxios.post).toHaveBeenCalledWith('http://localhost:8080/api/users', {
+        email: 'test@example.com',
+        password: 'password123',
+        passwordConfirmation: 'password123',
+        name: 'テストユーザー',
+        profile: '',
+        affiliation: '',
+        position: '',
+      });
     });
 
     // 成功メッセージの表示確認
@@ -94,9 +91,10 @@ describe('SignUpPage Component', () => {
 
   test('4. サーバー側でエラーが返された場合、エラーメッセージが表示されること', async () => {
     // APIがエラーレスポンス（400 Bad Requestなど）を返すように設定
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ message: 'メールアドレスは既に登録されています。' }),
+    mockedAxios.post.mockRejectedValueOnce({
+      response: {
+        data: { message: 'メールアドレスは既に登録されています。' },
+      },
     });
 
     render(<SignUpPage />);

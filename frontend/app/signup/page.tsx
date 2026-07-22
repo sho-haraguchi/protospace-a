@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import axios from 'axios';
 import styles from './signup.module.css';
 
 // 状態管理（State）の定義
@@ -29,63 +30,48 @@ export default function SignUpPage() {
 
     try {
       // バックエンドの新規登録API（Spring Boot）へリクエストを送信
-      const response = await fetch('http://localhost:8080/api/users', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        // 入力されたStateの値をJSON形式に変換して送信
-        body: JSON.stringify({ 
-          email, 
-          password, 
-          passwordConfirmation,
-          name,
-          profile,
-          affiliation,
-          position
-        }),
+      // axios は第2引数にオブジェクトを渡すだけで自動的に JSON 化して送信します
+      await axios.post('http://localhost:8080/api/users', { 
+        email, 
+        password, 
+        passwordConfirmation,
+        name,
+        profile,
+        affiliation,
+        position
       });
 
-      // APIからのレスポンスをJSONとして解析
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        // レスポンス解析エラー対策
-      }
+      // HTTPステータスが200番台（成功）の場合
+      setMessage('🎉 登録が完了しました！');
 
-      // レスポンス結果に応じた画面の更新
-      if (response.ok) {
-        // HTTPステータスが200番台（成功）の場合
-        setMessage('🎉 登録が完了しました！');
+      // 登録完了後、フォームの入力をすべてクリアする
+      setEmail('');
+      setPassword('');
+      setPasswordConfirmation('');
+      setName('');
+      setProfile('');
+      setAffiliation('');
+      setPosition('');
 
-        // 登録完了後、フォームの入力をすべてクリアする
-        setEmail('');
-        setPassword('');
-        setPasswordConfirmation('');
-        setName('');
-        setProfile('');
-        setAffiliation('');
-        setPosition('');
-      } else {
-        // HTTPステータスがエラー（重複エラーやバリデーションエラーなど）の場合
-        // バックエンドから返ってきたエラーの形式に合わせてメッセージを抽出
-        if (typeof data === 'string') {
-          setMessage(`❌ ${data}`);
-        } else if (data?.message) {
-          setMessage(`❌ ${data.message}`);
-        } else if (typeof data === 'object' && data !== null) {
-          // 複数のバリデーションエラーがオブジェクトで返ってきた場合、繋げて表示
-          const errorMsg = Object.values(data).join(' / ');
-          setMessage(`❌ ${errorMsg}`);
-        } else {
-          setMessage('❌ 登録に失敗しました。');
-        }
-      }
-    } catch (error) {
-      // ネットワークエラー（サーバーが起動していない等）の場合
+    } catch (error: any) {
+      // HTTPステータスがエラー（重複エラーやバリデーションエラーなど）またはネットワークエラーの場合
+      // axios はエラー発生時に catch へ移動するため、ここでエラーレスポンスを判定します
       console.error(error);
-      setMessage('⚠️ サーバーとの通信に失敗しました。');
+
+      const data = error.response?.data;
+
+      // バックエンドから返ってきたエラーの形式に合わせてメッセージを抽出
+      if (typeof data === 'string') {
+        setMessage(`❌ ${data}`);
+      } else if (data?.message) {
+        setMessage(`❌ ${data.message}`);
+      } else if (typeof data === 'object' && data !== null) {
+        // 複数のバリデーションエラーがオブジェクトで返ってきた場合、繋げて表示
+        const errorMsg = Object.values(data).join(' / ');
+        setMessage(`❌ ${errorMsg}`);
+      } else {
+        setMessage('❌ 登録に失敗しました。');
+      }
     }
   };
 
