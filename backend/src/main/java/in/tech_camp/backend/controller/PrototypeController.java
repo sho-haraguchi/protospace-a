@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.form.PrototypeForm;
+import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.service.PrototypeService;
 import lombok.RequiredArgsConstructor;
 
@@ -51,5 +52,16 @@ public class PrototypeController {
     @GetMapping("/{id}")
     public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {
         return prototypeService.findById(id);
+    }
+
+    /**
+     * プロトタイプ編集
+     * PUT: /app/prototypes/{id}/update
+     */
+    @PostMapping("/{id}/update")
+    public PrototypeEntity updatePrototype(
+            @PathVariable Integer id, 
+            @ModelAttribute @Validated PrototypeEditForm form) throws IOException {
+        return prototypeService.updatePrototype(id, form);
     }
 }
