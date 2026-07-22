@@ -21,7 +21,7 @@ public interface PrototypeRepository {
       @Result(property = "user.name", column = "user_name")
     })
   List<PrototypeEntity> findAll();
-}
+
 
   // プロトタイプ詳細画面表示
   @Select("SELECT p.*, u.name AS \"user.name\" " +
