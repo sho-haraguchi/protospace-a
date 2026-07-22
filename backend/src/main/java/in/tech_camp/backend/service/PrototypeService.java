@@ -1,6 +1,7 @@
 package in.tech_camp.backend.service;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +15,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PrototypeService {
 
+    private final StorageService storageService;
     private final PrototypeRepository prototypeRepository;
-    private final StorageService storageService; 
 
     /**
      * 新規プロトタイプの登録処理
@@ -37,5 +38,19 @@ public class PrototypeService {
         prototypeRepository.insert(prototype);
 
         return prototype;
+    }
+
+    /**
+     * プロトタイプ一覧取得
+     */
+    public List<PrototypeEntity> findAllPrototypes() {
+        return prototypeRepository.findAll();
+    }
+
+    /**
+     * プロトタイプ詳細取得
+     */
+    public PrototypeEntity findById(Integer id) {
+        return prototypeRepository.findById(id);
     }
 }

@@ -1,10 +1,13 @@
 package in.tech_camp.backend.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,34 +26,30 @@ public class PrototypeController {
     private final PrototypeService prototypeService;
 
     /**
-     * プロトタイプ新規投稿処理（postPrototypes）
+     * プロトタイプ新規投稿機能
+     * POST: /app/prototypes
      */
     @PostMapping
-    public PrototypeEntity postPrototypes(
-            @ModelAttribute @Validated PrototypeForm prototypeForm
-            // @AuthenticationPrincipal CustomUserDetail currentUser
-    ) throws IOException {
-        Integer currentUserId = 1; 
-        
-        return prototypeService.createPrototype(prototypeForm, currentUserId);
+    public PrototypeEntity postPrototypes(@ModelAttribute @Validated PrototypeForm prototypeForm) throws IOException {
+        // 仮のユーザーID (1) でプロトタイプを作成
+        return prototypeService.createPrototype(prototypeForm, 1);
     }
 
     /**
-     * プロトタイプ編集画面表示（editPrototype）
+     * プロトタイプ一覧表示機能
+     * GET: /app/prototypes
      */
-
+    @GetMapping
+    public List<PrototypeEntity> showPrototypes() {
+        return prototypeService.findAllPrototypes(); 
+    }
 
     /**
-     * プロトタイプ編集処理（updatePrototype）
+     * プロトタイプ詳細表示機能
+     * GET: /app/prototypes/{id}
      */
-
-
-    /**
-     * プロトタイプ詳細画面表示（showPrototypeDetail）
-     */
-
-
-    /**
-     * プロトタイプ削除処理（deletePrototype）
-     */
+    @GetMapping("/{id}")
+    public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {
+        return prototypeService.findById(id);
+    }
 }
