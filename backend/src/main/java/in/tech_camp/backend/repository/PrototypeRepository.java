@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Result;
 import in.tech_camp.backend.entity.PrototypeEntity;
@@ -29,4 +30,9 @@ public interface PrototypeRepository {
             "LEFT JOIN users u ON p.user_id = u.id " +
             "WHERE p.id = #{id}")
     PrototypeEntity findById(Integer id);
+
+
+    //プロトタイプ編集
+  @Update("UPDATE prototypes SET name = #{name}, slogan = #{slogan}, concept = #{concept}, image = #{image} WHERE id = #{id}")
+     void update(PrototypeEntity prototype);
 }
