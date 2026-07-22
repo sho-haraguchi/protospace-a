@@ -93,7 +93,9 @@ const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormPr
           type="file"
           accept="image/*"
           className={styles['input-file']}
-          {...register('image', { required: '画像を選択してください' })}
+          {...register('image', { 
+             required: initialData ? false : '画像を選択してください' 
+          })}
         />
         {errors.image && <p className={styles['error-text']}>{errors.image.message}</p>}
       </div>
