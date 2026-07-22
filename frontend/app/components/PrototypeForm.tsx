@@ -1,13 +1,11 @@
 'use client';
 
 import { useForm } from 'react-hook-form';
+import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
 
-export interface PrototypeFormData {
-  name: string;
-  slogan: string;
-  concept: string;
-  image: FileList;
+interface PrototypeListProps {
+  prototypes: PrototypeData[];
 }
 
 interface PrototypeFormProps {
@@ -21,7 +19,7 @@ interface PrototypeFormProps {
 }
 
 const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormProps) => {
-  const { register, handleSubmit, formState: { errors } } = useForm<PrototypeFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<PrototypeData>({
     defaultValues: {
       name: initialData?.name || '',
       slogan: initialData?.slogan || '',
@@ -29,7 +27,7 @@ const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormPr
     }
   });
 
-  const handleFormSubmit = (data: PrototypeFormData) => {
+  const handleFormSubmit = (data: PrototypeData) => {
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('slogan', data.slogan);
