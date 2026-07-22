@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +27,7 @@ public class PrototypeController {
 
     /**
      * プロトタイプ新規投稿機能
+     * POST: /app/prototypes
      */
     @PostMapping
     public PrototypeEntity postPrototypes(@ModelAttribute @Validated PrototypeForm prototypeForm) throws IOException {
@@ -35,67 +37,19 @@ public class PrototypeController {
 
     /**
      * プロトタイプ一覧表示機能
+     * GET: /app/prototypes
      */
     @GetMapping
     public List<PrototypeEntity> showPrototypes() {
         return prototypeService.findAllPrototypes(); 
     }
-}
-
-    private final PrototypeService prototypeService;
 
     /**
-     * プロトタイプ新規投稿処理（postPrototypes）
+     * プロトタイプ詳細表示機能
+     * GET: /app/prototypes/{id}
      */
-    @PostMapping
-    public PrototypeEntity postPrototypes(
-            @ModelAttribute @Validated PrototypeForm prototypeForm
-            // @AuthenticationPrincipal CustomUserDetail currentUser
-    ) throws IOException {
-        Integer currentUserId = 1; 
-        
-        return prototypeService.createPrototype(prototypeForm, currentUserId);
+    @GetMapping("/{id}")
+    public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {
+        return prototypeService.findById(id);
     }
-
-    /**
-     * プロトタイプ編集画面表示（editPrototype）
-     */
-
-
-    /**
-     * プロトタイプ編集処理（updatePrototype）
-     */
-
-
-    /**
-     * プロトタイプ詳細画面表示（showPrototypeDetail）
-     */
-
-
-  /**
-   * プロトタイプ編集画面表示（editPrototype）
-   */
-
-
-
-  /**
-   * プロトタイプ編集処理（updatePrototype）
-   */
-
-
-
-  /**
-   * プロトタイプ詳細画面表示（showPrototypeDetail）
-   */
-  @GetMapping("/api/prototypes/{id}")
-  public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {
-    PrototypeEntity prototype = prototypeService.findById(id);
-    return prototype;
-  }
-
-
-  
-  /**
-   * プロトタイプ削除処理（deletePrototype）
-   */
 }
