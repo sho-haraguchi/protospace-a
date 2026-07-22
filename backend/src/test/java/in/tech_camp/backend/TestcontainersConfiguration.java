@@ -15,7 +15,6 @@ public class TestcontainersConfiguration {
     @Bean
     @ServiceConnection
     public PostgreSQLContainer<?> postgresContainer() {
-        // Dockerイメージを指定してコンテナを定義
         return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"))
                 .withDatabaseName("proto_db_test")
                 .withUsername("postgres")
