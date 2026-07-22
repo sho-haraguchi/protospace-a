@@ -1,98 +1,111 @@
+'use client';
+
 import { useForm } from 'react-hook-form';
+import styles from './PrototypeForm.module.css'; 
 
 export interface PrototypeFormData {
   name: string;
   slogan: string;
   concept: string;
-  image: FileList; // URL文字列から FileList 型に変更
+  image: FileList;
 }
 
 interface PrototypeFormProps {
-  initialData?: Partial<PrototypeFormData>;
+  initialData?: {
+    name?: string;
+    slogan?: string;
+    concept?: string;
+  };
   errorMessages: string[];
-  onSubmit: (formData: FormData) => void; // FormData を親に渡す
+  onSubmit: (formData: FormData) => void;
 }
 
 const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormProps) => {
   const { register, handleSubmit, formState: { errors } } = useForm<PrototypeFormData>({
-    defaultValues: initialData
+    defaultValues: {
+      name: initialData?.name || '',
+      slogan: initialData?.slogan || '',
+      concept: initialData?.concept || '',
+    }
   });
 
-      // 送信時に React Hook Form のデータを FormData オブジェクトに変換
-    const handleFormSubmit = (data: PrototypeFormData) => {
-      const formData = new FormData();
-      
-      formData.append('name', data.name);
-      formData.append('slogan', data.slogan);
-      formData.append('concept', data.concept);
-      
-      if (data.image && data.image[0]) {
-        formData.append('image', data.image[0]); 
-      }
+  const handleFormSubmit = (data: PrototypeFormData) => {
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('slogan', data.slogan);
+    formData.append('concept', data.concept);
 
-      onSubmit(formData);
-    };
+    if (data.image && data.image[0]) {
+      formData.append('image', data.image[0]);
+    }
+
+    onSubmit(formData);
+  };
 
   return (
-    <form 
-      onSubmit={handleSubmit(handleFormSubmit)} 
-      style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxWidth: '500px', margin: '20px auto' }}
-    >
-      {errorMessages.map((error, index) => (
-        <div key={index} className="error-message" style={{ color: 'red' }}>{error}</div>
-      ))}
+    // ★2. styles['form-container'] のように指定
+    <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
+      
+      {/* エラーメッセージ表示エリア */}
+      {errorMessages.length > 0 && (
+        <div className={styles['error-messages-box']}>
+          {errorMessages.map((error, index) => (
+            <p key={index} className={styles['error-text']}>{error}</p>
+          ))}
+        </div>
+      )}
 
-      {/* Name */}
-      <div>
-        <label style={{ display: 'block' }}>Name</label>
+      {/* プロトタイプの名称 */}
+      <div className={styles.field}>
+        <label className={styles['field-label']}>プロトタイプの名称</label>
         <input
           type="text"
-          {...register('name', { required: "Name can't be blank" })}
-          placeholder="Name"
-          style={{ width: '100%', padding: '8px' }}
+          className={`${styles['input-text']} ${styles['input-short']}`}
+          {...register('name', { required: 'プロトタイプの名称を入力してください' })}
         />
-        {errors.name && <span className="error-message" style={{ color: 'red' }}>{errors.name.message}</span>}
+        {errors.name && <p className={styles['error-text']}>{errors.name.message}</p>}
       </div>
 
-      {/* Slogan */}
-      <div>
-        <label style={{ display: 'block' }}>Slogan</label>
-        <input
-          type="text"
-          {...register('slogan', { required: "Slogan can't be blank" })}
-          placeholder="Slogan"
-          style={{ width: '100%', padding: '8px' }}
-        />
-        {errors.slogan && <span className="error-message" style={{ color: 'red' }}>{errors.slogan.message}</span>}
-      </div>
-
-      {/* Concept */}
-      <div>
-        <label style={{ display: 'block' }}>Concept</label>
+      {/* キャッチコピー */}
+      <div className={styles.field}>
+        <label className={styles['field-label']}>キャッチコピー</label>
         <textarea
-          {...register('concept', { required: "Concept can't be blank" })}
-          placeholder="Concept"
-          rows={5}
-          style={{ width: '100%', padding: '8px' }}
+          rows={2}
+          className={`${styles['input-text']} ${styles['input-textarea']}`}
+          {...register('slogan', { required: 'キャッチコピーを入力してください' })}
         />
-        {errors.concept && <span className="error-message" style={{ color: 'red' }}>{errors.concept.message}</span>}
+        {errors.slogan && <p className={styles['error-text']}>{errors.slogan.message}</p>}
       </div>
 
-      {/* Image (ファイル選択に変更) */}
-      <div>
-        <label style={{ display: 'block' }}>プロトタイプの画像</label>
+      {/* コンセプト */}
+      <div className={styles.field}>
+        <label className={styles['field-label']}>コンセプト</label>
+        <textarea
+          rows={3}
+          className={`${styles['input-text']} ${styles['input-textarea']}`}
+          {...register('concept', { required: 'コンセプトを入力してください' })}
+        />
+        {errors.concept && <p className={styles['error-text']}>{errors.concept.message}</p>}
+      </div>
+
+      {/* プロトタイプの画像 */}
+      <div className={styles.field}>
+        <label className={styles['field-label']}>プロトタイプの画像</label>
         <input
           type="file"
           accept="image/*"
-          {...register('image', { required: "Image file is required" })}
-          style={{ width: '100%', padding: '8px' }}
+          className={styles['input-file']}
+          {...register('image', { required: '画像を選択してください' })}
         />
-        {errors.image && <span className="error-message" style={{ color: 'red' }}>{errors.image.message}</span>}
+        {errors.image && <p className={styles['error-text']}>{errors.image.message}</p>}
       </div>
 
-      <button type="submit" style={{ padding: '10px', backgroundColor: '#0070f3', color: 'white', border: 'none', cursor: 'pointer' }}>
-        保存する
-      </button>
+      {/* 保存するボタン */}
+      <div className={styles.actions}>
+        <button type="submit" className={styles['submit-btn']}>
+          保存する
+        </button>
+      </div>
     </form>
   );
 };

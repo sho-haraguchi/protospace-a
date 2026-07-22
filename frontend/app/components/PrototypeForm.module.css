@@ -1,0 +1,98 @@
+/* 全体の配置を中央寄せ & 余白をしっかり確保 */
+.container {
+  width: 100%;
+  max-width: 960px;
+  margin: 40px auto 0 auto;
+  padding: 0 40px;        
+  box-sizing: border-box;
+}
+
+/* 「新規プロトタイプ投稿」タイトル */
+.page-heading {
+  font-size: 28px;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 30px;
+  line-height: 1.2;
+}
+
+/* フォーム全体の縦並びと間隔 */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 各入力グループ */
+.field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* ラベルテキスト (プロトタイプの名称、キャッチコピー等) */
+.field-label {
+  font-size: 14px;
+  color: #333333;
+  margin-bottom: 8px;
+  font-weight: normal;
+}
+
+/* テキスト入力欄の共通スタイル */
+.input-text {
+  border: 1px solid #cccccc;
+  border-radius: 2px;
+  padding: 6px 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.input-text:focus {
+  border-color: #87cefa;
+}
+
+/* 短い入力欄（プロトタイプの名称） */
+.input-short {
+  width: 200px;
+}
+
+/* 横長入力欄（キャッチコピー・コンセプト） */
+.input-textarea {
+  width: 500px;
+  max-width: 100%;
+  resize: vertical;
+}
+
+/* ファイル選択部分 */
+.input-file {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* 保存するボタン */
+.submit-btn {
+  background-color: #7ec8f8;
+  color: #ffffff;
+  border: none;
+  border-radius: 3px;
+  padding: 10px 24px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  margin-top: 10px;
+}
+
+.submit-btn:hover {
+  background-color: #6bbcf0;
+}
+
+/* エラーメッセージ表示 */
+.error-text {
+  color: #e53e3e;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 0;
+}

@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 public class PrototypeService {
 
     private final PrototypeRepository prototypeRepository;
-    private final StorageService storageService; // ※ 画像保存用Service（前述で作成したもの）
+    private final StorageService storageService; 
 
     /**
      * 新規プロトタイプの登録処理

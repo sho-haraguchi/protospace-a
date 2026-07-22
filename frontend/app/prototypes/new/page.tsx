@@ -1,26 +1,14 @@
-'use client'
+'use client';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/app/components/Header';
-import Footer from '@/app/components/Footer';
 import PrototypeForm from '@/app/components/PrototypeForm';
-
-// 初期入力データ用の型（画像は空文字などで初期化）
-interface PrototypeInitialData {
-  name: string;
-  slogan: string;
-  concept: string;
-  image: string;
-}
+import styles from '@/app/components/PrototypeForm.module.css'; 
 
 const CreatePrototypePage = () => {
   const router = useRouter();
-  
-  // 1. 変数名を initialData に変更して FormData とのバッティングを回避！
-  const initialData: PrototypeInitialData = { name: '', slogan: '', concept: '', image: '' };
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
 
-  // 2. 引数を PrototypeForm から送られてくる FormData 型で受け取る
   const handleSubmit = async (formData: FormData) => {
     setErrorMessages([]);
 
@@ -28,7 +16,7 @@ const CreatePrototypePage = () => {
       const response = await fetch('http://localhost:8080/app/prototypes', {
         method: 'POST',
         credentials: 'include',
-        body: formData, // ★ フォームから渡された FormData が正しくセットされます
+        body: formData,
       });
 
       if (response.ok) {
@@ -49,18 +37,13 @@ const CreatePrototypePage = () => {
   };
 
   return (
-    <>
-      <div className="contents row">
-        <div className="container">
-          <h3>投稿する</h3>
-          <PrototypeForm
-            initialData={initialData}
-            errorMessages={errorMessages}
-            onSubmit={handleSubmit}
-          />
-        </div>
-      </div>
-    </>
+    <div className={styles.container}>
+      <h2 className={styles['page-heading']}>新規プロトタイプ投稿</h2>
+      <PrototypeForm
+        errorMessages={errorMessages}
+        onSubmit={handleSubmit}
+      />
+    </div>
   );
 };
 

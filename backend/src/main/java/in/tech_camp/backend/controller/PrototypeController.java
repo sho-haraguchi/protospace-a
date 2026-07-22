@@ -30,12 +30,11 @@ public class PrototypeController {
             @ModelAttribute @Validated PrototypeForm prototypeForm
             // @AuthenticationPrincipal CustomUserDetail currentUser
     ) throws IOException {
-        Integer currentUserId = 1; // ログインユーザーID（認証実装後に currentUser.getId() に変更）
+        Integer currentUserId = 1; 
         
-        // 登録処理を実行して、作成された PrototypeEntity を直接返す（エラーは GlobalExceptionHandler に自動委託）
         return prototypeService.createPrototype(prototypeForm, currentUserId);
     }
-}
+
     /**
      * プロトタイプ編集画面表示（editPrototype）
      */
