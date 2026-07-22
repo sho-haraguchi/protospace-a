@@ -1,5 +1,6 @@
 package in.tech_camp.backend.repository;
 
+
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
@@ -20,4 +21,12 @@ public interface PrototypeRepository {
       @Result(property = "user.name", column = "user_name")
     })
   List<PrototypeEntity> findAll();
+}
+
+  // プロトタイプ詳細画面表示
+  @Select("SELECT p.*, u.name AS \"user.name\" " +
+            "FROM prototypes p " +
+            "LEFT JOIN users u ON p.user_id = u.id " +
+            "WHERE p.id = #{id}")
+    PrototypeEntity findById(Integer id);
 }

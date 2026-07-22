@@ -6,16 +6,15 @@ import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.service.PrototypeService;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.GetMapping;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 public class PrototypeController {
+
   private final PrototypeService prototypeService;
-  public PrototypeController(PrototypeService prototypeService) {
-        this.prototypeService = prototypeService;
-    }
-    /**
+    
+  /**
    * プロトタイプ一覧表示機能（showPrototypes）
    */
   @GetMapping("/api/prototypes")
@@ -54,6 +53,13 @@ public class PrototypeController {
   /**
    * プロトタイプ詳細画面表示（showPrototypeDetail）
    */
+  @GetMapping("/api/prototypes/{id}")
+  public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {
+
+    PrototypeEntity prototype = prototypeService.findById(id);
+
+    return prototype;
+  }
 
 
   
