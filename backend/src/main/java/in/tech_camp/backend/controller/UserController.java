@@ -5,6 +5,10 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -16,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.LoginForm;
 import in.tech_camp.backend.form.UserForm;
@@ -55,6 +60,7 @@ public class UserController {
             UserEntity registeredUser = userService.registerUser(userForm);
             
             if (session != null) {
+                setSpringSecurityContext(registeredUser, session);
                 session.setAttribute("user", registeredUser);
             }
 
@@ -95,6 +101,8 @@ public class UserController {
         try {
             UserEntity loggedInUser = userService.login(loginForm);
 
+            setSpringSecurityContext(loggedInUser, session);
+
             session.setAttribute("user", loggedInUser);
 
             loggedInUser.setPassword(null);
@@ -103,7 +111,7 @@ public class UserController {
             return ResponseEntity.ok(loggedInUser);
 
         } catch (RuntimeException e) {
-          // ログイン失敗：エラーメッセージをステータス401（Unauthorized = 認証未許可）で返す
+            // ログイン失敗：エラーメッセージをステータス401（Unauthorized = 認証未許可）で返す
             Map<String, String> error = new HashMap<>();
             error.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -133,6 +141,7 @@ public class UserController {
         if (session != null) {
             session.invalidate();
         }
+        SecurityContextHolder.clearContext();
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "ログアウトしました");
@@ -155,7 +164,31 @@ public class UserController {
       // 取得できた場合は 200 OK とともにデータを返す
       return ResponseEntity.ok(response);
   }
-  /**
+    /**
+     * Spring Security の SecurityContext に認証ユーザーを書き込むメソッド
+     */
+    private void setSpringSecurityContext(UserEntity user, HttpSession session) {
+        CustomUserDetail customUserDetail = new CustomUserDetail(user);
+        
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        customUserDetail, 
+                        null, 
+                        customUserDetail.getAuthorities()
+                );
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // Spring Security が参照するセッションキーにコンテキストを保存
+        session.setAttribute(
+            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, 
+            context
+        );
+    }
+
+   /**
    * ログイン画面表示（showLogin）
    */
 
