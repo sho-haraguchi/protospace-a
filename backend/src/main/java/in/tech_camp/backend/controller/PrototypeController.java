@@ -37,23 +37,37 @@ public class PrototypeController {
     // 画像が保存されているベースディレクトリ
     private final Path imageStorageDir = Paths.get("uploads/prototypes").toAbsolutePath().normalize();
 
+    /**
+     * 画像取得機能
+     * GET: /api/images/{filename}
+     */
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
-            // 1. パスの解決とセキュリティチェック（上位ディレクトリへのアクセスを防ぐ）
-            Path filePath = this.imageStorageDir.resolve(filename).normalize();
+            // 1. filenameにパス区切り文字（/ や \）が含まれている場合の対策
+            // 純粋なファイル名部分（例: "xxx.jpg"）だけを抽出して不正なパス指定を防ぐ
+            String cleanFileName = filename;
+            if (cleanFileName.contains("/")) {
+                cleanFileName = cleanFileName.substring(cleanFileName.lastIndexOf('/') + 1);
+            }
+            if (cleanFileName.contains("\\")) {
+                cleanFileName = cleanFileName.substring(cleanFileName.lastIndexOf('\\') + 1);
+            }
+
+            // 2. パスの解決とセキュリティチェック（上位ディレクトリへのアクセスを防ぐ）
+            Path filePath = this.imageStorageDir.resolve(cleanFileName).normalize();
             if (!filePath.startsWith(this.imageStorageDir)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
             Resource resource = new UrlResource(filePath.toUri());
 
-            // 2. ファイルの存在確認
+            // 3. ファイルの存在確認
             if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.notFound().build();
             }
 
-            // 3. MIMEタイプの安全な判定（エラーで落ちないようにtry-catch）
+            // 4. MIMEタイプの安全な判定（エラーで落ちないようにtry-catch）
             String contentType = null;
             try {
                 contentType = Files.probeContentType(filePath);
@@ -72,15 +86,14 @@ public class PrototypeController {
         } catch (MalformedURLException e) {
             return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            // スタックトレースを出力しておくと原因追究が楽になります
-            System.out.println("エラー" + e);
+            System.err.println("画像取得エラー: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     /**
      * プロトタイプ新規投稿機能
-     * POST: /app/prototypes
+     * POST: /api/prototypes
      */
     @PostMapping("/prototypes")
     public PrototypeEntity postPrototypes(@ModelAttribute @Validated PrototypeForm prototypeForm) throws IOException {
@@ -90,7 +103,7 @@ public class PrototypeController {
 
     /**
      * プロトタイプ一覧表示機能
-     * GET: /app/prototypes
+     * GET: /api/prototypes
      */
     @GetMapping("/prototypes")
     public List<PrototypeEntity> showPrototypes() {
@@ -99,7 +112,7 @@ public class PrototypeController {
 
     /**
      * プロトタイプ詳細表示機能
-     * GET: /app/prototypes/{id}
+     * GET: /api/prototypes/{id}
      */
     @GetMapping("/prototypes/{id}")
     public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {

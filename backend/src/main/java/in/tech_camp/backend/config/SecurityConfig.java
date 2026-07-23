@@ -31,17 +31,17 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/css/**", "/images/**", "/").permitAll()
-                .requestMatchers("/uploads/prototypes/**", "/api/images/**").permitAll()
-
+                .requestMatchers("/api/images/**").permitAll()
+                
                 // ★ ユーザー・認証関連
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
 
-                // ★ プロトタイプ関連（GETとPOST両方を許可）
+                // ★ プロトタイプ関連（GETもPOSTも許可するように追加）
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll() // 👈 ここを追加！
+                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll() // 👈 これが抜けていたためブロックされていました！
 
                 .anyRequest().authenticated());
 
