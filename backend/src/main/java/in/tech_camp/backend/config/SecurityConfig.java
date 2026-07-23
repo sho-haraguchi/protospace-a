@@ -22,25 +22,29 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-              http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/css/**", "/images/**", "/").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
-                        .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
-                        .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/prototypes/**").permitAll()
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/css/**", "/images/**", "/").permitAll()
+                .requestMatchers("/api/images/**").permitAll()
+                
+                // ★ ユーザー・認証関連
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
+                .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
 
-                        .anyRequest().authenticated());
+                // ★ プロトタイプ関連（GETもPOSTも許可するように追加）
+                .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll() // 👈 これが抜けていたためブロックされていました！
+
+                .anyRequest().authenticated());
 
         return http.build();
     }

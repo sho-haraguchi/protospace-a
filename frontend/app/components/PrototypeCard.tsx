@@ -24,7 +24,7 @@ const PrototypeCard = ({ prototype }: PrototypeCardProps) => {
       {/* 画像エリア */}
       <div className="w-full aspect-square bg-[#A5DCE0] mb-4 overflow-hidden relative">
         <img 
-          src={imageUrl} 
+          src={`http://localhost:8080/api/images/${prototype.image}`} 
           alt={prototype.name} 
           className="w-full h-full object-cover" 
         />
