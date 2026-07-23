@@ -25,7 +25,7 @@ type UserDetailResponse = {
 };
 
 const API_URL = "http://localhost:8080/api/users";
-const IMAGE_BASE_URL = "http://localhost:8080/uploads/prototypes";
+const IMAGE_BASE_URL = "http://localhost:8080/api/images";
 
 async function getUserDetail(id: string): Promise<UserDetailResponse | null> {
   if (!id || id === "undefined") {
@@ -111,7 +111,7 @@ export default async function UserDetailPage({
                           ? "https://placehold.co/600x400?text=No+Image"
                           : prototype.image.startsWith("http")
                           ? prototype.image
-                          : `http://localhost:8080/uploads/prototypes/${prototype.image}`
+                          : `${IMAGE_BASE_URL}/${prototype.image}`
                       }
                       alt={prototype.name}
                       className={styles.image}
