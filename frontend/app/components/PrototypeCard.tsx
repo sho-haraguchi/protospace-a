@@ -16,11 +16,11 @@ const PrototypeCard = ({ prototype }: PrototypeCardProps) => {
         className="w-full aspect-square bg-[#A5DCE0] mb-4 overflow-hidden relative block hover:opacity-80 transition-opacity"
       >
         <img 
-           src={prototype.image || 'https://placehold.co/600x400?text=No+Image'} 
-           alt={prototype.name} 
-           className="w-full h-full object-cover" 
-         />
-      </Link>
+          src={`http://localhost:8080/api/images/${prototype.image}`} 
+          alt={prototype.name} 
+          className="w-full h-full object-cover" 
+        />
+      </div>
       {/* プロトタイプ名 */}
       <Link href={`/prototypes/${prototype.id}`} className="hover:underline">
         <h2 className="text-xl font-bold mb-2">{prototype.name}</h2>
