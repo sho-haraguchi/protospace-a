@@ -41,7 +41,7 @@ public class SecurityConfig {
 
                 // ★ プロトタイプ関連（GETもPOSTも許可するように追加）
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll() // 👈 これが抜けていたためブロックされていました！
+                .requestMatchers("/api/prototypes/**").permitAll() // 👈 これが抜けていたためブロックされていました！
 
                 .anyRequest().authenticated());
 

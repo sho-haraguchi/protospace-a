@@ -16,7 +16,8 @@ export default function EditPrototypePage({ params }: PageProps) {
   const router = useRouter();
   
   // バックエンドから取得した既存データを格納するState
-  const [initialData, setInitialData] = useState<{name: string, slogan: string, concept: string} | null>(null);
+  // 增加 image 属性
+  const [initialData, setInitialData] = useState<{name: string, slogan: string, concept: string, image?: string} | null>(null);
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +36,8 @@ export default function EditPrototypePage({ params }: PageProps) {
         }
 
         // 投稿者本人でなければトップページへ遷移
-        if (currentUser.id !== prototype.user.id) {
+        const ownerId = (prototype as any).userId || (prototype.user && prototype.user.id);
+        if (String(currentUser.id) !== String(ownerId)) {
           router.push('/');
           return;
         }
@@ -45,6 +47,7 @@ export default function EditPrototypePage({ params }: PageProps) {
           name: prototype.name,
           slogan: prototype.slogan,
           concept: prototype.concept,
+          image: prototype.image,
         });
 
       } catch (error) {

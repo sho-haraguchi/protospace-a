@@ -33,12 +33,16 @@ public interface PrototypeRepository {
 
 
   // プロトタイプ詳細画面表示
-  @Select("SELECT p.*, u.name AS \"user.name\" " +
+  @Select("SELECT p.*, u.id AS user_id, u.name AS user_name " +
             "FROM prototypes p " +
             "LEFT JOIN users u ON p.user_id = u.id " +
             "WHERE p.id = #{id}")
+    @Results({
+      @Result(property = "user.id", column = "user_id"),
+      @Result(property = "user.name", column = "user_name"),
+      @Result(property = "userId", column = "user_id") 
+    })
     PrototypeEntity findById(Integer id);
-
 
     //プロトタイプ編集
   @Update("UPDATE prototypes SET name = #{name}, slogan = #{slogan}, concept = #{concept}, image = #{image} WHERE id = #{id}")
