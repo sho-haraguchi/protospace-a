@@ -10,9 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -25,23 +22,23 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-              http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/error").permitAll()
-                        .requestMatchers("/css/**", "/images/**", "/").permitAll()
-                        
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
-                        .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
-                        .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
+        http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .csrf(csrf -> csrf.disable())
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/error").permitAll()
+                .requestMatchers("/css/**", "/images/**", "/").permitAll()
+                
+                .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
+                .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
+                .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()              
+                .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
 
-                        .anyRequest().authenticated());
+                .anyRequest().authenticated());
 
         return http.build();
     }

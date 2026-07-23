@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
 import { getPrototypeDetail } from '@/lib/api/prototypes';
+import { getComments } from '@/lib/api/comments';
+import CommentSection from '@/app/components/CommentSection';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -9,7 +11,11 @@ interface PageProps {
 
 export default async function PrototypeDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const prototype = await getPrototypeDetail(id);
+
+  const [prototype, initialComments] = await Promise.all([
+    getPrototypeDetail(id),
+    getComments(Number(id)).catch(() => []),
+  ]);
 
   if (!prototype) {
     notFound();
@@ -55,6 +61,12 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
         <h2 className={styles.sectionTitle}>コンセプト</h2>
         <p className={styles.sectionText}>{prototype.concept}</p>
       </div>
+
+      {/* コメント機能 */}
+      <CommentSection
+        prototypeId={Number(id)}
+        initialComments={initialComments}
+      />
     </div>
   );
 }
