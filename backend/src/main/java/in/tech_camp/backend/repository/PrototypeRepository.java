@@ -1,5 +1,9 @@
 package in.tech_camp.backend.repository;
 
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+
 
 import java.util.List;
 
@@ -12,6 +16,11 @@ import in.tech_camp.backend.entity.PrototypeEntity;
 
 @Mapper
 public interface PrototypeRepository {
+  // 投稿保存
+    @Insert("INSERT INTO prototypes (name, slogan, concept, image, user_id) VALUES (#{name}, #{slogan}, #{concept}, #{image}, #{userId})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    void insert(PrototypeEntity prototype);
+  
   //「プロトタイプ情報」と「投稿者の名前」を同時に取得するためJOIN句を使用
   @Select("SELECT prototypes.*, users.name AS user_name " +
           "FROM prototypes " +

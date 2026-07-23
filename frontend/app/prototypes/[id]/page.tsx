@@ -22,7 +22,7 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
 
       {/* 投稿者 */}
       <p className={styles.author}>
-        <Link href={`/users/${prototype.userId}`} className={styles.authorLink}>
+        <Link href={`/users/${prototype.user?.id}`} className={styles.authorLink}>
           by {prototype.user?.name || '名無し'}
         </Link>
       </p>
