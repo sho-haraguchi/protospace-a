@@ -62,8 +62,8 @@ export default function EditPrototypePage({ params }: PageProps) {
   const handleSubmit = async (formData: FormData) => {
     setErrorMessages([]);
     try {
-      const response = await axios.post(
-        `http://localhost:8080/api/prototypes/${id}/update`,
+      const response = await axios.put(
+        `http://localhost:8080/api/prototypes/${id}`,
         formData,
         {
           withCredentials: true,
