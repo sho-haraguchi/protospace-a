@@ -1,6 +1,7 @@
 package in.tech_camp.backend.service;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,16 +33,27 @@ public class StorageService {
             Files.createDirectories(this.uploadDir);
         }
 
-        // 安全なファイル名を作成
+        // 元のファイル名を取得し、安全なファイル名のみ抽出
         String originalFilename = image.getOriginalFilename();
-        if (originalFilename != null) {
-            originalFilename = Paths.get(originalFilename).getFileName().toString();
-        }
-        String savedFileName = UUID.randomUUID().toString() + "_" + originalFilename;
+        String safeFileName = "image.jpg"; // デフォルト名
 
-        // ファイルを保存先にコピー
-        Path targetPath = this.uploadDir.resolve(savedFileName);
-        Files.copy(image.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+        if (originalFilename != null && !originalFilename.isBlank()) {
+            safeFileName = Paths.get(originalFilename).getFileName().toString();
+        }
+
+        // UUIDを付与した一意のファイル名を生成（例: 90c49a00-b254-..._sample.jpg）
+        String savedFileName = UUID.randomUUID().toString() + "_" + safeFileName;
+
+        // 保存先パスを解決し、ディレクトリトラバーサルを防ぐ
+        Path targetPath = this.uploadDir.resolve(savedFileName).normalize();
+        if (!targetPath.startsWith(this.uploadDir)) {
+            throw new SecurityException("不正なファイルパスです");
+        }
+
+        // ファイルを保存先に書き込み（上書き許可）
+        try (InputStream inputStream = image.getInputStream()) {
+            Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        }
 
         return savedFileName;
     }
