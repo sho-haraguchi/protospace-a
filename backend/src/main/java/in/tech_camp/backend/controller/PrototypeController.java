@@ -31,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class PrototypeController {
 
@@ -126,7 +125,7 @@ public class PrototypeController {
      * プロトタイプ編集
      * PUT: /app/prototypes/{id}/update
      */
-    @PutMapping("/{id}")
+    @PutMapping("/prototypes/{id}")
     public PrototypeEntity updatePrototype(
             @PathVariable Integer id, 
             @ModelAttribute @Validated PrototypeEditForm form,
