@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.service.PrototypeService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -60,7 +62,13 @@ public class PrototypeController {
     @PutMapping("/{id}")
     public PrototypeEntity updatePrototype(
             @PathVariable Integer id, 
-            @ModelAttribute @Validated PrototypeEditForm form) throws IOException {
-        return prototypeService.updatePrototype(id, form);
+            @ModelAttribute @Validated PrototypeEditForm form,
+            HttpSession session) throws IOException {
+       // セッションからログイン中のユーザーを取り出す
+        UserEntity currentUser = (UserEntity) session.getAttribute("user");
+        if (currentUser == null) {
+            throw new RuntimeException("ログインが必要です。");
+        }
+        return prototypeService.updatePrototype(id, form, currentUser.getId());
     }
 }

@@ -56,9 +56,20 @@ public class PrototypeService {
     }
 
     @Transactional
-    public PrototypeEntity updatePrototype(Integer id, PrototypeEditForm form) throws IOException {
+    public PrototypeEntity updatePrototype(Integer id, PrototypeEditForm form, Integer currentUserId) throws IOException {
         // データベースから現在のデータを取得
         PrototypeEntity prototype = prototypeRepository.findById(id);
+
+        // 指定されたIDのデータが存在しない場合の安全対策
+        if (prototype == null) {
+            throw new IllegalArgumentException("指定されたプロトタイプが見つかりません。");
+        }
+
+        // 所有者チェック
+        // DBの投稿者ID(user_id)と、現在ログインしているユーザーIDが一致しない場合は例外を投げる
+        if (!prototype.getUserId().equals(currentUserId)) {
+            throw new RuntimeException("他のユーザーの投稿を編集する権限がありません。");
+        }
 
         // 新しいデータで上書き
         prototype.setName(form.getName());
