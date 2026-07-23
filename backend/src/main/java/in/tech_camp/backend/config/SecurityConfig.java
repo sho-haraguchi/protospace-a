@@ -33,16 +33,16 @@ public class SecurityConfig {
                 .requestMatchers("/css/**", "/images/**", "/").permitAll()
                 .requestMatchers("/api/images/**").permitAll()
                 
-                // ★ ユーザー・認証関連
+                // ユーザー・認証関連
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
-
-                // ★ プロトタイプ関連（GETもPOSTも許可するように追加）
+                
+                // プロトタイプ関連
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll() // 👈 これが抜けていたためブロックされていました！
-
+                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll()
+                                   
                 .anyRequest().authenticated());
 
         return http.build();
