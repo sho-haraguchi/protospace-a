@@ -13,7 +13,7 @@ const CreatePrototypePage = () => {
     setErrorMessages([]);
 
     try {
-      const response = await fetch('http://localhost:8080/app/prototypes', {
+      const response = await fetch('http://localhost:8080/api/prototypes', {
         method: 'POST',
         credentials: 'include',
         body: formData,
