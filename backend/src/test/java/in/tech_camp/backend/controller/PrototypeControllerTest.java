@@ -105,15 +105,15 @@ class PrototypeControllerTest {
         updatedEntity.setName("編集後のプロトタイプ名");
         updatedEntity.setImage("uuid_test.jpg");
 
-        when(prototypeService.updatePrototype(eq(prototypeId), any(PrototypeEditForm.class)))
+        when(prototypeService.updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any()))
                 .thenReturn(updatedEntity);
 
         // 実行
-        PrototypeEntity result = prototypeController.updatePrototype(prototypeId, editForm);
+        PrototypeEntity result = prototypeController.updatePrototype(prototypeId, editForm, null);
 
         // 検証
         assertNotNull(result);
         assertEquals("編集後のプロトタイプ名", result.getName());
-        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class));
+        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any());
     }
 }
