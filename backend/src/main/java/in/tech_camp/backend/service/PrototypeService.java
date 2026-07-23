@@ -45,6 +45,7 @@ public class PrototypeService {
      * プロトタイプ一覧取得
      */
     public List<PrototypeEntity> findAllPrototypes() {
+        
         return prototypeRepository.findAll();
     }
 
