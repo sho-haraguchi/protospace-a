@@ -2,10 +2,9 @@
 
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import PrototypeForm from '@/app/components/PrototypeForm';
 import styles from '@/app/components/PrototypeForm.module.css';
-import { getPrototypeDetail } from '@/lib/api/prototypes';
+import { getPrototypeDetail, updatePrototype } from '@/lib/api/prototypes';
 import { apiClient } from '@/lib/api/client';
 
 interface PageProps {
@@ -62,13 +61,7 @@ export default function EditPrototypePage({ params }: PageProps) {
   const handleSubmit = async (formData: FormData) => {
     setErrorMessages([]);
     try {
-      const response = await axios.put(
-        `http://localhost:8080/api/prototypes/${id}`,
-        formData,
-        {
-          withCredentials: true,
-        }
-      );
+      await updatePrototype(id, formData);
 
       // リクエスト成功の場合、詳細ページへ戻る
       router.push(`/prototypes/${id}`);
