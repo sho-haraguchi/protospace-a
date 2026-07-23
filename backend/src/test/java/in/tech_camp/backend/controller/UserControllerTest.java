@@ -11,9 +11,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.BindingResult;
 
+import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.UserForm;
 import in.tech_camp.backend.service.UserService;
 
@@ -108,5 +118,53 @@ class UserControllerTest {
 
         // Serviceが実行されないことを検証
         verify(userService, never()).registerUser(any(UserForm.class));
+    }
+
+    @Test
+    @DisplayName("showMypage: 存在するユーザーIDを指定した場合、ユーザー情報が返る")
+    void testShowMypage_Success() {
+        Integer userId = 1;
+        UserEntity mockUser = new UserEntity();
+        mockUser.setId(userId);
+        mockUser.setName("テストユーザー");
+        mockUser.setProfile("よろしくお願いします");
+
+        Map<String, Object> mockResponse = new HashMap<>();
+        mockResponse.put("user", mockUser);
+        mockResponse.put("prototypes", List.of());
+
+        // userService.getUserDetail が呼ばれたら mockResponse を返すよう設定
+        when(userService.getUserDetail(userId)).thenReturn(mockResponse);
+
+        // 2. 実行 (When)
+        ResponseEntity<Map<String, Object>> response = userController.showMypage(userId);
+
+        // 3. 検証 (Then)
+        assertNotNull(response); // レスポンスがnullでないこと
+        assertEquals(HttpStatus.OK, response.getStatusCode()); // ステータスが 200 OK であること
+        assertEquals(mockResponse, response.getBody()); // 中身が想定通りであること
+        
+        // userService.getUserDetail が指定したIDで1回呼ばれたことを検証
+        verify(userService).getUserDetail(userId);
+    }
+
+    @Test
+    @DisplayName("showMypage: 存在しないユーザーIDを指定した場合、ステータス404が返る")
+    void testShowMypage_NotFound() {
+        // 1. 準備 (Given)
+        Integer userId = 999;
+        
+        // 存在しない場合は null が返るよう設定
+        when(userService.getUserDetail(userId)).thenReturn(null);
+
+        // 2. 実行 (When)
+        ResponseEntity<Map<String, Object>> response = userController.showMypage(userId);
+
+        // 3. 検証 (Then)
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode()); // ステータスが 404 NOT FOUND であること
+        
+        verify(userService).getUserDetail(userId);
+    
     }
 }
