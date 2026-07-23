@@ -25,7 +25,7 @@ type UserDetailResponse = {
 };
 
 const API_URL = "http://localhost:8080/api/users";
-const IMAGE_BASE_URL = "http://localhost:8080/api/images";
+const IMAGE_BASE_URL = 'http://localhost:8080/uploads/prototypes';
 
 async function getUserDetail(id: string): Promise<UserDetailResponse | null> {
   if (!id || id === "undefined") {
