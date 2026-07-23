@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from "axios";
 import PrototypeForm from '@/app/components/PrototypeForm';
 import styles from '@/app/components/PrototypeForm.module.css'; 
 
@@ -13,26 +14,26 @@ const CreatePrototypePage = () => {
     setErrorMessages([]);
 
     try {
-      const response = await fetch('http://localhost:8080/app/prototypes', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
+      await axios.post("http://localhost:8080/api/prototypes", formData, {
+        withCredentials: true, // セッション(Cookie)を送信（fetchのcredentials: 'include'に相当）
       });
-
-      if (response.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        const errorData = await response.json();
+      router.push('/');
+      router.refresh();
+    } catch (error) {
+      console.error("通信エラー:", error);
+      
+      if (axios.isAxiosError(error) && error.response) {
+        // バックエンドからバリデーションエラーなどが返ってきた場合
+        const errorData = error.response.data;
         if (errorData.messages) {
           setErrorMessages(errorData.messages);
         } else {
-          setErrorMessages(['投稿の保存に失敗しました。']);
+          setErrorMessages(["投稿の保存に失敗しました。"]);
         }
+      } else {
+        // サーバーが落ちているなどの致命的なエラー
+        setErrorMessages(["サーバーとの通信に失敗しました。"]);
       }
-    } catch (error) {
-      console.error('通信エラー:', error);
-      setErrorMessages(['サーバーとの通信に失敗しました。']);
     }
   };
 

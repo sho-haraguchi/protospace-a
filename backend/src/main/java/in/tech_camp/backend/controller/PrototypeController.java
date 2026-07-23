@@ -18,7 +18,7 @@ import in.tech_camp.backend.service.PrototypeService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/app/prototypes")
+@RequestMapping("/api/prototypes")
 @CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class PrototypeController {
