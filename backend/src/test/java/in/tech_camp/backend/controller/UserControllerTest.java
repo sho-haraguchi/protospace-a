@@ -1,5 +1,11 @@
 package in.tech_camp.backend.controller;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,16 +17,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.validation.BindingResult;
 
 import in.tech_camp.backend.entity.UserEntity;
@@ -69,12 +68,12 @@ class UserControllerTest {
         validForm.setPosition("");
 
         BindingResult bindingResult = mock(BindingResult.class);
-        when(bindingResult.hasErrors()).thenReturn(true);
+        when(bindingResult.hasErrors()).thenReturn(false);
 
         userController.createUser(validForm, bindingResult);
 
         // サービスが問題なく呼ばれることを検証
-        verify(userService, never()).registerUser(any(UserForm.class));
+        verify(userService).registerUser(any(UserForm.class));
     }
 
     @Test
