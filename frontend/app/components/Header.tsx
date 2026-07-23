@@ -76,7 +76,7 @@ export default function Header() {
             <Link href="/login" className={styles.btn}>
               ログイン
             </Link>
-            <Link href="/register" className={styles.btn}>
+            <Link href="/signup" className={styles.btn}>
               新規登録
             </Link>
           </>
