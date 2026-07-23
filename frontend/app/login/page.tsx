@@ -19,7 +19,7 @@ export default function LoginPage() {
       // axios ではリクエスト送信とレスポンス取得を1ステップで行える
       // セッションCookie（JSESSIONID）をやり取りするために withCredentials: true を設定
       const response = await axios.post(
-        `${API_BASE_URL}/api/users/login`,
+        `${API_BASE_URL}/users/login`,
         {
           email,
           password,
