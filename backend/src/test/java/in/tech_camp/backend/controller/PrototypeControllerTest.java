@@ -23,19 +23,23 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
+import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.service.PrototypeService;
-import in.tech_camp.backend.form.PrototypeEditForm;
 
 @ExtendWith(MockitoExtension.class)
 class PrototypeControllerTest {
 
     @Mock
-    private PrototypeService prototypeService; // 依存先をモック化
+    private PrototypeService prototypeService;
+
+    @Mock
+    private CustomUserDetail mockUser;
 
     @InjectMocks
-    private PrototypeController prototypeController; // モックを注入したテスト対象
+    private PrototypeController prototypeController;
 
     private PrototypeForm validForm;
     private MockMultipartFile validImage;
@@ -43,7 +47,6 @@ class PrototypeControllerTest {
 
     @BeforeEach
     void setUp() {
-        // テスト用ダミー画像ファイルの作成
         validImage = new MockMultipartFile(
                 "image",
                 "test.jpg",
@@ -51,7 +54,6 @@ class PrototypeControllerTest {
                 "test image content".getBytes()
         );
 
-        // テスト用フォームの作成
         validForm = new PrototypeForm();
         validForm.setName("テストプロトタイプ");
         validForm.setSlogan("テストキャッチコピー");
@@ -67,12 +69,12 @@ class PrototypeControllerTest {
         mockPrototype.setUserId(1);
     }
 
-    
-
+    // =========================================================================
+    // 1. プロトタイプ投稿・編集機能のテスト
+    // =========================================================================
     @Test
     @DisplayName("1-1. 正常系: 正しいパラメータを送信した際、PrototypeService が正しく呼び出されること")
     void postPrototypes_Success_ShouldCallService() throws IOException {
-        // モックの戻り値を定義
         PrototypeEntity mockEntity = new PrototypeEntity();
         mockEntity.setName("テストプロトタイプ");
         mockEntity.setSlogan("テストキャッチコピー");
@@ -80,34 +82,28 @@ class PrototypeControllerTest {
         mockEntity.setImage("uuid_test.jpg");
         mockEntity.setUserId(1);
 
+        when(mockUser.getId()).thenReturn(1);
         when(prototypeService.createPrototype(any(PrototypeForm.class), eq(1))).thenReturn(mockEntity);
 
-        // コントローラーのメソッドを直接呼び出す
-        PrototypeEntity result = prototypeController.postPrototypes(validForm);
+        ResponseEntity<?> response = prototypeController.postPrototypes(validForm, mockUser);
 
-        // PrototypeService の createPrototype メソッドが 1 回呼ばれたことを検証
+        assertNotNull(response);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
         verify(prototypeService, times(1)).createPrototype(any(PrototypeForm.class), eq(1));
-
-        // 戻り値の検証
-        assertNotNull(result);
-        assertEquals("テストプロトタイプ", result.getName());
-        assertEquals("テストキャッチコピー", result.getSlogan());
-        assertEquals("テストコンセプト", result.getConcept());
-        assertEquals("uuid_test.jpg", result.getImage());
     }
 
     @Test
     @DisplayName("1-2. 正常系: 送信された PrototypeForm の値がそのまま PrototypeService へ引き渡されること")
     void postPrototypes_Success_FormValuesPassedToService() throws IOException {
-        // コントローラー実行
-        prototypeController.postPrototypes(validForm);
+        when(mockUser.getId()).thenReturn(1);
 
-        // Service に正確に validForm オブジェクトが渡っているか検証
+        prototypeController.postPrototypes(validForm, mockUser);
+
         verify(prototypeService).createPrototype(validForm, 1);
     }
 
-    @Test
-    @DisplayName("正常なデータで編集リクエストが送られた場合、Serviceの更新処理が呼び出されること")
+@Test
+    @DisplayName("1-3. 正常系: 正常なデータで編集リクエストが送られた場合、Serviceの更新処理が呼び出されること")
     void updatePrototype_Success_ShouldCallService() throws IOException {
         Integer prototypeId = 1;
         PrototypeEditForm editForm = new PrototypeEditForm();
@@ -116,40 +112,48 @@ class PrototypeControllerTest {
         editForm.setConcept("編集後のコンセプト");
         editForm.setImage(validImage);
 
+        // ⏬ テスト用のモックセッションとログインユーザーを作成
+        jakarta.servlet.http.HttpSession mockSession = org.mockito.Mockito.mock(jakarta.servlet.http.HttpSession.class);
+        in.tech_camp.backend.entity.UserEntity mockUserEntity = new in.tech_camp.backend.entity.UserEntity();
+        mockUserEntity.setId(1);
+
+        when(mockSession.getAttribute("user")).thenReturn(mockUserEntity);
+
         PrototypeEntity updatedEntity = new PrototypeEntity();
         updatedEntity.setId(prototypeId);
         updatedEntity.setName("編集後のプロトタイプ名");
         updatedEntity.setImage("uuid_test.jpg");
 
-        when(prototypeService.updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any()))
+        when(prototypeService.updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), eq(1)))
                 .thenReturn(updatedEntity);
 
-        // 実行
-        PrototypeEntity result = prototypeController.updatePrototype(prototypeId, editForm, null);
+        // ⏬ 第3引数に mockSession を渡す
+        PrototypeEntity result = prototypeController.updatePrototype(prototypeId, editForm, mockSession);
 
         // 検証
         assertNotNull(result);
         assertEquals("編集後のプロトタイプ名", result.getName());
-        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any());
-  @Nested
+        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), eq(1));
+    }
+
+    // =========================================================================
+    // 2. プロトタイプ一覧取得機能のテスト
+    // =========================================================================
+    @Nested
     @DisplayName("2. プロトタイプ一覧取得機能")
     class GetAllPrototypes {
 
         @Test
         @DisplayName("2-1. 正常系: 登録済みのプロトタイプ一覧が正常に取得できること")
         void getAllPrototypes_Success() {
-            // 【Given: 事前準備】
-            // findAllPrototypes() が呼ばれたらプロトタイプが1件入ったリストを返すよう設定
             when(prototypeService.findAllPrototypes()).thenReturn(List.of(mockPrototype));
 
-            // 【When: 実行】
             List<PrototypeEntity> result = prototypeController.showPrototypes();
 
-            // 【Then: 検証】
             assertNotNull(result);
-            assertEquals(1, result.size()); // 件数が1件であること
-            assertEquals("テストプロトタイプ", result.get(0).getName()); // データの中身が正しいこと
-            verify(prototypeService, times(1)).findAllPrototypes(); // 呼び出しの検証
+            assertEquals(1, result.size());
+            assertEquals("テストプロトタイプ", result.get(0).getName());
+            verify(prototypeService, times(1)).findAllPrototypes();
         }
     }
 
@@ -163,13 +167,10 @@ class PrototypeControllerTest {
         @Test
         @DisplayName("3-1. 正常系: 存在するIDを指定した場合、詳細エンティティが返ること")
         void showPrototypeDetail_Success() {
-            // 【Given: 事前準備】
             when(prototypeService.findById(1)).thenReturn(mockPrototype);
 
-            // 【When: 実行】
             PrototypeEntity result = prototypeController.showPrototypeDetail(1);
 
-            // 【Then: 検証】
             assertNotNull(result);
             assertEquals(1, result.getId());
             assertEquals("テストプロトタイプ", result.getName());
@@ -180,14 +181,11 @@ class PrototypeControllerTest {
         @Test
         @DisplayName("3-2. 異常系: 存在しないIDを指定した場合、null が返ること")
         void showPrototypeDetail_NotFound() {
-            // 【Given: 事前準備】
             when(prototypeService.findById(999)).thenReturn(null);
 
-            // 【When: 実行】
             PrototypeEntity result = prototypeController.showPrototypeDetail(999);
 
-            // 【Then: 検証】
-            assertEquals(null, result); // 返り値が null であること
+            assertEquals(null, result);
             verify(prototypeService, times(1)).findById(999);
         }
     }
@@ -204,7 +202,6 @@ class PrototypeControllerTest {
         void getImage_NotFound() {
             String filename = "non_existent_file_12345.jpg";
 
-            // 🌟 実際の Controller ロジック（ローカルファイル探索）をテスト
             ResponseEntity<Resource> response = prototypeController.getImage(filename);
 
             assertNotNull(response);
@@ -219,7 +216,6 @@ class PrototypeControllerTest {
             ResponseEntity<Resource> response = prototypeController.getImage(filename);
 
             assertNotNull(response);
-            // cleanFileName で安全にファイル名が抽出され、存在しないため 404 になることを検証
             assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         }
     }
