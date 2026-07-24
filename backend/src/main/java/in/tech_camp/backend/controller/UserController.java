@@ -81,7 +81,7 @@ public class UserController {
         return createUser(userForm, bindingResult, null);
     }
 
-    /**
+/**
      * ログイン処理
      */
     @PostMapping("/login")
@@ -101,9 +101,22 @@ public class UserController {
         try {
             UserEntity loggedInUser = userService.login(loginForm);
 
+            // 1. 既存のセッション保存
             setSpringSecurityContext(loggedInUser, session);
 
             session.setAttribute("user", loggedInUser);
+
+            // 2. ★ Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
+            CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+
+            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+
+            // セッションに Spring Security の Context を明示的に紐付け
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
 
             loggedInUser.setPassword(null);
 
@@ -117,7 +130,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
-
+    
     /**
      * ログイン中ユーザー情報取得 API（Headerコンポーネント用）
      */

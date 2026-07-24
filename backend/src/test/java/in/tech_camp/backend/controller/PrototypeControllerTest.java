@@ -131,6 +131,7 @@ class PrototypeControllerTest {
         assertNotNull(result);
         assertEquals("編集後のプロトタイプ名", result.getName());
         verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any());
+    }
   @Nested
     @DisplayName("2. プロトタイプ一覧取得機能")
     class GetAllPrototypes {
