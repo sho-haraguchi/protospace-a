@@ -1,0 +1,82 @@
+.container {
+  background-color: #f4f4f4;
+  padding: 30px;
+  margin-top: 40px;
+}
+
+.title {
+  text-align: left;
+  font-size: 16px;
+  color: #3B4043;
+
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.input {
+  width: 177px;
+  height: 21px;
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: 2px;
+  font-size: 14px;
+  background-color: #fff;
+}
+
+.submitBtn {
+  background: linear-gradient(180deg, #8ad0f9 0%, #87CEFA 100%);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 24px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.2s ease;
+}
+
+.submitBtn:hover {
+  opacity: 0.85;
+}
+
+.loginNotice {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.loginLink {
+  color: #5bb3f0;
+  text-decoration: underline;
+}
+
+.commentList {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin: 0;
+  text-align: left;
+}
+
+.commentItem {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.authorLink {
+  color: #888;
+  text-decoration: underline;
+  margin-left: 6px;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: #777;
+}

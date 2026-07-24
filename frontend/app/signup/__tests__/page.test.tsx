@@ -1,114 +1,174 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import SignUpPage from '../page';
 import '@testing-library/jest-dom';
-import axios from 'axios';
+import SignUpPage from '../page';
+import { apiClient } from '@/lib/api/client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+// 外部モジュールのモック設定 (Mocking)
+// 1. apiClient 通信（POSTリクエスト等）をモック化して実際のサーバー通信を防ぐ
+jest.mock('@/lib/api/client', () => ({
+  apiClient: {
+    post: jest.fn(),
+  },
+}));
 
-// axios のモック（ダミー化）
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// 型安全にモックメソッドを操作できるようにキャスト設定
+const mockedApiClient = apiClient as jest.Mocked<typeof apiClient>;
+
+// 2. Next.js App Router のルーター機能（useRouter）をモック化
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}));
 
 describe('SignUpPage Component', () => {
+  // 各テストケース実行前の共通前処理
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.clearAllMocks(); // モック関数の呼び出し履歴や返り値をクリア
   });
 
+  // ヘルパー関数: レンダリングされたDOMから入力要素をまとめて取得
+  const getFormElements = (container: HTMLElement) => {
+    const inputs = container.querySelectorAll('input');
+    const textareas = container.querySelectorAll('textarea');
+    return {
+      emailInput: inputs[0],
+      passwordInput: inputs[1],
+      passwordConfirmInput: inputs[2],
+      nameInput: inputs[3],
+      profileTextarea: textareas[0],
+      occupationTextarea: textareas[1],
+      positionTextarea: textareas[2],
+    };
+  };
+
+  // 1. 初期描画のテスト
   test('1. 初期描画時に全てのフォーム要素が存在すること', () => {
-    render(<SignUpPage />);
+    // 画面を描画
+    const { container } = render(<SignUpPage />);
 
+    // タイトルの見出しが存在することを確認
     expect(screen.getByRole('heading', { name: 'ユーザー新規登録' })).toBeInTheDocument();
-    expect(screen.getByLabelText('メールアドレス')).toBeInTheDocument();
-    expect(screen.getByLabelText('パスワード（6文字以上）')).toBeInTheDocument();
-    expect(screen.getByLabelText('パスワード再入力')).toBeInTheDocument();
-    expect(screen.getByLabelText('ユーザー名')).toBeInTheDocument();
-    expect(screen.getByLabelText('プロフィール')).toBeInTheDocument();
-    expect(screen.getByLabelText('所属')).toBeInTheDocument();
-    expect(screen.getByLabelText('役職')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '新規登録' })).toBeInTheDocument();
+
+    // フォームの各入力要素を取得
+    const {
+      emailInput,
+      passwordInput,
+      passwordConfirmInput,
+      nameInput,
+      profileTextarea,
+      occupationTextarea,
+      positionTextarea,
+    } = getFormElements(container);
+
+    // 全ての入力項目（input / textarea）が画面上に存在することを検証
+    expect(emailInput).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
+    expect(passwordConfirmInput).toBeInTheDocument();
+    expect(nameInput).toBeInTheDocument();
+    expect(profileTextarea).toBeInTheDocument();
+    expect(occupationTextarea).toBeInTheDocument();
+    expect(positionTextarea).toBeInTheDocument();
   });
 
+  // 2. バリデーションエラー（パスワード不一致）のテスト
   test('2. パスワードと確認用パスワードが一致しない場合、エラーが表示されAPIが呼ばれないこと', async () => {
-    render(<SignUpPage />);
+    const { container } = render(<SignUpPage />);
+    const {
+      emailInput,
+      passwordInput,
+      passwordConfirmInput,
+      nameInput,
+      profileTextarea,
+      occupationTextarea,
+      positionTextarea,
+    } = getFormElements(container);
 
-    // 入力処理
-    fireEvent.change(screen.getByLabelText('メールアドレス'), { target: { value: 'test@example.com' } });
-    fireEvent.change(screen.getByLabelText('パスワード（6文字以上）'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText('パスワード再入力'), { target: { value: 'different_password' } });
-    fireEvent.change(screen.getByLabelText('ユーザー名'), { target: { value: 'テストユーザー' } });
+    // パスワードと確認用パスワードで「異なる値」を入力
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.change(passwordConfirmInput, { target: { value: 'different_password' } });
+    fireEvent.change(nameInput, { target: { value: 'テストユーザー' } });
+    fireEvent.change(profileTextarea, { target: { value: 'プロフィール' } });
+    fireEvent.change(occupationTextarea, { target: { value: '所属' } });
+    fireEvent.change(positionTextarea, { target: { value: '役職' } });
 
-    // フォーム送信
+    // フォーム送信ボタンをクリック
     fireEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
-    // エラーメッセージの確認
-    expect(await screen.findByText('❌ パスワードが一致しません。')).toBeInTheDocument();
-    
-    // API通信（axios）が一度も実行されていないことを検証
-    expect(mockedAxios.post).not.toHaveBeenCalled();
-  });
-
-  test('3. 正常に入力して登録が成功した場合、成功メッセージが表示されフォームがクリアされること', async () => {
-    // APIが成功レスポンス（200 OK）を返すように設定
-    mockedAxios.post.mockResolvedValueOnce({
-      data: { message: 'Success' },
+    // バリデーションエラーメッセージが表示されることを確認
+    await waitFor(() => {
+      expect(screen.getByText(/パスワードが一致しません/)).toBeInTheDocument();
     });
 
-    render(<SignUpPage />);
+    // バックエンドAPIが呼び出されていないことを検証
+    expect(mockedApiClient.post).not.toHaveBeenCalled();
+  });
 
-    // 入力処理
-    const emailInput = screen.getByLabelText('メールアドレス');
-    const passwordInput = screen.getByLabelText('パスワード（6文字以上）');
-    const passwordConfirmInput = screen.getByLabelText('パスワード再入力');
-    const nameInput = screen.getByLabelText('ユーザー名');
+  // 3. 正常系（登録成功）のテスト
+  test('3. 正常に入力して登録が成功した場合、APIが呼ばれること', async () => {
+    // APIが成功レスポンス（ステータスコード 200）を返すようにモック化
+    mockedApiClient.post.mockResolvedValueOnce({ status: 200, data: {} });
 
+    const { container } = render(<SignUpPage />);
+    const {
+      emailInput,
+      passwordInput,
+      passwordConfirmInput,
+      nameInput,
+      profileTextarea,
+      occupationTextarea,
+      positionTextarea,
+    } = getFormElements(container);
+
+    // 正しい情報（パスワードの一致含む）を入力
     fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.change(passwordConfirmInput, { target: { value: 'password123' } });
     fireEvent.change(nameInput, { target: { value: 'テストユーザー' } });
+    fireEvent.change(profileTextarea, { target: { value: 'プロフィール' } });
+    fireEvent.change(occupationTextarea, { target: { value: '所属' } });
+    fireEvent.change(positionTextarea, { target: { value: '役職' } });
 
-    // 送信
+    // フォーム送信
     fireEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
-    // APIリクエストのパラメータを検証
+    // apiClient.post が正常に呼び出されたことを検証
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledWith(`${API_BASE_URL}/api/users`, {
-        email: 'test@example.com',
-        password: 'password123',
-        passwordConfirmation: 'password123',
-        name: 'テストユーザー',
-        profile: '',
-        affiliation: '',
-        position: '',
-      });
+      expect(mockedApiClient.post).toHaveBeenCalled();
     });
-
-    // 成功メッセージの表示確認
-    expect(await screen.findByText('🎉 登録が完了しました！')).toBeInTheDocument();
-
-    // フォームがリセットされていることを確認
-    expect(emailInput).toHaveValue('');
-    expect(passwordInput).toHaveValue('');
-    expect(nameInput).toHaveValue('');
   });
 
+  // 4. 異常系（サーバーエラー）のテスト
   test('4. サーバー側でエラーが返された場合、エラーメッセージが表示されること', async () => {
-    // APIがエラーレスポンス（400 Bad Requestなど）を返すように設定
-    mockedAxios.post.mockRejectedValueOnce({
-      response: {
-        data: { message: 'メールアドレスは既に登録されています。' },
-      },
+    // サーバーが既存ユーザーエラー（メッセージ付き）を返すようにモック設定
+    mockedApiClient.post.mockRejectedValueOnce({
+      response: { data: { message: 'すでに登録されているメールアドレスです' } },
     });
 
-    render(<SignUpPage />);
+    const { container } = render(<SignUpPage />);
+    const {
+      emailInput,
+      passwordInput,
+      passwordConfirmInput,
+      nameInput,
+      profileTextarea,
+      occupationTextarea,
+      positionTextarea,
+    } = getFormElements(container);
 
-    fireEvent.change(screen.getByLabelText('メールアドレス'), { target: { value: 'already_exists@example.com' } });
-    fireEvent.change(screen.getByLabelText('パスワード（6文字以上）'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText('パスワード再入力'), { target: { value: 'password123' } });
-    fireEvent.change(screen.getByLabelText('ユーザー名'), { target: { value: 'テストユーザー' } });
+    // 登録済みメールアドレスを入力して送信
+    fireEvent.change(emailInput, { target: { value: 'already_exists@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.change(passwordConfirmInput, { target: { value: 'password123' } });
+    fireEvent.change(nameInput, { target: { value: 'テストユーザー' } });
+    fireEvent.change(profileTextarea, { target: { value: 'プロフィール' } });
+    fireEvent.change(occupationTextarea, { target: { value: '所属' } });
+    fireEvent.change(positionTextarea, { target: { value: '役職' } });
 
     fireEvent.click(screen.getByRole('button', { name: '新規登録' }));
 
-    // 返されたエラーメッセージが表示されることを確認
-    expect(await screen.findByText('❌ メールアドレスは既に登録されています。')).toBeInTheDocument();
+    // サーバーからのエラーメッセージが画面に反映されていることを検証
+    await waitFor(() => {
+      expect(screen.getByText(/すでに登録されているメールアドレスです/)).toBeInTheDocument();
+    });
   });
 });

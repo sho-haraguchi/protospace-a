@@ -7,10 +7,14 @@ import org.apache.ibatis.annotations.Options;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
-import org.apache.ibatis.annotations.Results;
-import org.apache.ibatis.annotations.Result;
+
 import in.tech_camp.backend.entity.PrototypeEntity;
 
 @Mapper
@@ -47,4 +51,9 @@ public interface PrototypeRepository {
     //プロトタイプ編集
   @Update("UPDATE prototypes SET name = #{name}, slogan = #{slogan}, concept = #{concept}, image = #{image} WHERE id = #{id}")
      void update(PrototypeEntity prototype);
+  /**
+   * 指定したユーザーIDに紐づくプロトタイプを取得するSQL
+   */
+  @Select("SELECT * FROM prototypes WHERE user_id = #{userId}")
+  List<PrototypeEntity> findByUserId(Integer userId);
 }
