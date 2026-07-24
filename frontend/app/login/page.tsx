@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import axios from 'axios';
-//import { apiClient } from '@/lib/api/client';
 import styles from './login.module.css';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
@@ -17,12 +16,6 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      // axios ではリクエスト送信とレスポンス取得を1ステップで行える
-      // セッションCookie（JSESSIONID）をやり取りするために withCredentials: true を設定
-    //  const response = await apiClient.post('/users/login', {
-    //    email,
-     //   password,
-    //  });
       const response = await axios.post(
         `${API_BASE_URL}/users/login`,
         { email, password },
