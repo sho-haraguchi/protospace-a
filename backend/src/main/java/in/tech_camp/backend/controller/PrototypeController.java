@@ -157,44 +157,22 @@ public class PrototypeController {
         return prototypeService.updatePrototype(id, form, currentUser.getId());
     }
 
-@PostMapping("/prototypes/{id}/delete")
-public ResponseEntity<?> deletePrototype(
-    @PathVariable("id") Integer id,
-    @AuthenticationPrincipal UserDetails customUser // ログイン中のユーザー情報
-) {
-    System.out.println("★削除リクエスト受信: ID = " + id);
-    
-    // 1. 未ログインチェック
-    if (customUser == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "ログインが必要です"));
-    }
+    @PostMapping("/prototypes/{id}/delete")
+    public ResponseEntity<?> deletePrototype(
+            @PathVariable("id") Integer id,
+            @AuthenticationPrincipal UserDetails customUser) {
 
-    try {
-        // 2. 削除対象のプロトタイプを取得
-        PrototypeEntity prototype = prototypeRepository.findById(id);
-        if (prototype == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "該当の投稿が存在しません"));
+        // 1. 未ログインチェック
+        if (customUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "ログインが必要です"));
         }
 
-        // 3. ログインユーザーの情報を取得（プロジェクトのCustomUserDetails等の定義に合わせて変更してください）
-        // 例: CustomUserDetails に getId() がある場合
-        // Integer loginUserId = ((CustomUserDetails) customUser).getId();
-
-        // 例: メールアドレスやユーザー名でユーザーを判定する場合
+        // 2. ユーザーID取得 & サービス呼び出し
         UserEntity loginUser = userRepository.findByEmail(customUser.getUsername());
+        prototypeService.deletePrototype(id, loginUser.getId());
 
-        // 4. 本人確認（ログインユーザーID と 投稿のuserId を比較）
-        if (!prototype.getUserId().equals(loginUser.getId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "自分の投稿のみ削除できます"));
-        }
-
-        // 5. 本人の場合のみ削除実行
-        prototypeRepository.deleteById(id);
+        // 3. 成功時レスポンス（失敗時はGlobalExceptionHandlerが各ステータスコードでキャッチ）
         return ResponseEntity.ok().body(Map.of("message", "削除が完了しました"));
-
-    } catch (Exception e) {
-        System.out.println("エラー: " + e);
-        return ResponseEntity.internalServerError().body(Map.of("messages", List.of("Internal Server Error")));
     }
-}
 }
