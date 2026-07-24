@@ -4,6 +4,7 @@ import styles from './page.module.css';
 import { getPrototypeDetail } from '@/lib/api/prototypes';
 import { getComments } from '@/lib/api/comments';
 import CommentSection from '@/app/components/CommentSection';
+import DeleteButton from './DeleteButton'; 
 
 const IMAGE_BASE_URL = 'http://localhost:8080/api/images';
 
@@ -46,7 +47,7 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
         <Link href={`/prototypes/${prototype.id}/edit`} className={styles.btn}>
           編集する
         </Link>
-        <button className={styles.btn}>削除する</button>
+        <DeleteButton id={prototype.id} className={styles.btn} />
       </div>
 
       {/* 画像 */}

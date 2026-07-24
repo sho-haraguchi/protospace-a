@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal; // 👈 追加
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,8 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.entity.UserEntity;
-import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.form.PrototypeEditForm;
+import in.tech_camp.backend.form.PrototypeForm;
+import in.tech_camp.backend.repository.PrototypeRepository;
+import in.tech_camp.backend.repository.UserRepository;
 import in.tech_camp.backend.service.PrototypeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +41,8 @@ import lombok.RequiredArgsConstructor;
 public class PrototypeController {
 
     private final PrototypeService prototypeService;
+    private final PrototypeRepository prototypeRepository;
+    private final UserRepository userRepository;
 
     // 画像が保存されているベースディレクトリ
     private final Path imageStorageDir = Paths.get("uploads/prototypes").toAbsolutePath().normalize();
@@ -151,4 +156,45 @@ public class PrototypeController {
         }
         return prototypeService.updatePrototype(id, form, currentUser.getId());
     }
+
+@PostMapping("/prototypes/{id}/delete")
+public ResponseEntity<?> deletePrototype(
+    @PathVariable("id") Integer id,
+    @AuthenticationPrincipal UserDetails customUser // ログイン中のユーザー情報
+) {
+    System.out.println("★削除リクエスト受信: ID = " + id);
+    
+    // 1. 未ログインチェック
+    if (customUser == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "ログインが必要です"));
+    }
+
+    try {
+        // 2. 削除対象のプロトタイプを取得
+        PrototypeEntity prototype = prototypeRepository.findById(id);
+        if (prototype == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "該当の投稿が存在しません"));
+        }
+
+        // 3. ログインユーザーの情報を取得（プロジェクトのCustomUserDetails等の定義に合わせて変更してください）
+        // 例: CustomUserDetails に getId() がある場合
+        // Integer loginUserId = ((CustomUserDetails) customUser).getId();
+
+        // 例: メールアドレスやユーザー名でユーザーを判定する場合
+        UserEntity loginUser = userRepository.findByEmail(customUser.getUsername());
+
+        // 4. 本人確認（ログインユーザーID と 投稿のuserId を比較）
+        if (!prototype.getUserId().equals(loginUser.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "自分の投稿のみ削除できます"));
+        }
+
+        // 5. 本人の場合のみ削除実行
+        prototypeRepository.deleteById(id);
+        return ResponseEntity.ok().body(Map.of("message", "削除が完了しました"));
+
+    } catch (Exception e) {
+        System.out.println("エラー: " + e);
+        return ResponseEntity.internalServerError().body(Map.of("messages", List.of("Internal Server Error")));
+    }
+}
 }

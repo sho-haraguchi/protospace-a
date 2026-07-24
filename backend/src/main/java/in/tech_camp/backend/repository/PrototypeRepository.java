@@ -1,12 +1,8 @@
 package in.tech_camp.backend.repository;
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Options;
-
-
 import java.util.List;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -56,4 +52,7 @@ public interface PrototypeRepository {
    */
   @Select("SELECT * FROM prototypes WHERE user_id = #{userId}")
   List<PrototypeEntity> findByUserId(Integer userId);
+
+  @Delete("DELETE FROM prototypes WHERE id = #{id}")
+  void deleteById(Integer id);
 }
