@@ -14,11 +14,23 @@ interface PrototypeFormProps {
     concept?: string;
     image?: string;
   };
+  onSubmit?: (formData: FormData) => Promise<void>;
+  errorMessages?: string[];
 }
 
-const PrototypeForm = ({ initialData }: PrototypeFormProps) => {
+// 引数で onSubmit と errorMessages を受け取るように変更
+const PrototypeForm = ({ 
+  initialData, 
+  onSubmit: externalOnSubmit, 
+  errorMessages: externalErrorMessages 
+}: PrototypeFormProps) => {
   const router = useRouter();
-  const [errorMessages, setErrorMessages] = useState<string[]>([]);
+  const [internalErrorMessages, setInternalErrorMessages] = useState<string[]>([]);
+
+  // 親（編集画面）からエラーメッセージが渡されていればそれを使い、なければ内部のエラーを使う
+  const errorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
+    ? externalErrorMessages
+    : internalErrorMessages;
 
   const { register, handleSubmit, formState: { errors } } = useForm<PrototypeData>({
     defaultValues: {
@@ -28,37 +40,44 @@ const PrototypeForm = ({ initialData }: PrototypeFormProps) => {
     }
   });
 
-const handleFormSubmit = async (data: PrototypeData) => {
-  setErrorMessages([]);
+  const handleFormSubmit = async (data: PrototypeData) => {
+    setInternalErrorMessages([]);
 
-  const formData = new FormData();
-  formData.append('name', data.name);
-  formData.append('slogan', data.slogan);
-  formData.append('concept', data.concept);
+    const formData = new FormData();
+    formData.append('name', data.name);
+    formData.append('slogan', data.slogan);
+    formData.append('concept', data.concept);
 
-  if (data.image && data.image[0]) {
-    formData.append('image', data.image[0]);
-  }
-
-  try {
-    // ヘッダーの明示指定を外し、apiClientに任せる
-    await apiClient.post('/prototypes', formData);
-
-    // 投稿成功時
-    router.push('/');
-    router.refresh();
-  } catch (error: any) {
-    console.error('投稿エラー:', error);
-
-    if (error.response?.data?.messages) {
-      setErrorMessages(error.response.data.messages);
-    } else if (error.response?.data?.message) {
-      setErrorMessages([error.response.data.message]);
-    } else {
-      setErrorMessages(['投稿の保存に失敗しました。']);
+    if (data.image && data.image[0]) {
+      formData.append('image', data.image[0]);
     }
-  }
-};
+
+    try {
+      // 編集時は親から渡された更新用処理(PUT)を実行してここで終了する
+      if (externalOnSubmit) {
+        await externalOnSubmit(formData);
+        return;
+      }
+
+      // 新規投稿時のみ従来のPOST処理を実行する
+      await apiClient.post('/prototypes', formData);
+
+      // 投稿成功時
+      router.push('/');
+      router.refresh();
+    } catch (error: any) {
+      console.error('投稿エラー:', error);
+
+      if (error.response?.data?.messages) {
+        setInternalErrorMessages(error.response.data.messages);
+      } else if (error.response?.data?.message) {
+        setInternalErrorMessages([error.response.data.message]);
+      } else {
+        setInternalErrorMessages(['投稿の保存に失敗しました。']);
+      }
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
       
