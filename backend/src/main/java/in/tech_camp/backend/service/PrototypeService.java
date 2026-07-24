@@ -7,9 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.repository.PrototypeRepository;
+import in.tech_camp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,6 +20,7 @@ public class PrototypeService {
 
     private final StorageService storageService;
     private final PrototypeRepository prototypeRepository;
+    private final UserRepository userRepository;
 
     /**
      * 新規プロトタイプの登録処理
@@ -95,21 +98,27 @@ public class PrototypeService {
      * プロトタイプ削除処理
      */
     @Transactional
-    public void deletePrototype(Integer id, Integer currentUserId) {
-        // 1. データベースから該当の投稿を取得
+    public void deletePrototype(Integer id, String username) {
+        // 1. ログインユーザー情報を取得
+        UserEntity loginUser = userRepository.findByEmail(username);
+        if (loginUser == null) {
+            throw new SecurityException("ユーザー情報が存在しません。");
+        }
+
+        // 2. データベースから該当の投稿を取得
         PrototypeEntity prototype = prototypeRepository.findById(id);
 
-        // 2. 削除対象が存在しない場合 -> 404 になる
+        // 3. 削除対象が存在しない場合 (404)
         if (prototype == null) {
             throw new IllegalArgumentException("該当の投稿が存在しません。");
         }
 
-        // 3. 本人確認（投稿者ID と ログインユーザーID の比較） -> 403 になる
-        if (!prototype.getUserId().equals(currentUserId)) {
+        // 4. 本人確認（投稿者ID と ログインユーザーID の比較） (403)
+        if (!prototype.getUserId().equals(loginUser.getId())) {
             throw new SecurityException("自分の投稿のみ削除できます。");
         }
 
-        // 4. 本人の場合のみ削除を実行
+        // 5. 本人の場合のみ削除を実行
         prototypeRepository.deleteById(id);
     }
 }

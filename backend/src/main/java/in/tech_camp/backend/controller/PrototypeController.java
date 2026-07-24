@@ -29,8 +29,6 @@ import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.form.PrototypeForm;
-import in.tech_camp.backend.repository.PrototypeRepository;
-import in.tech_camp.backend.repository.UserRepository;
 import in.tech_camp.backend.service.PrototypeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +39,6 @@ import lombok.RequiredArgsConstructor;
 public class PrototypeController {
 
     private final PrototypeService prototypeService;
-    private final PrototypeRepository prototypeRepository;
-    private final UserRepository userRepository;
 
     // 画像が保存されているベースディレクトリ
     private final Path imageStorageDir = Paths.get("uploads/prototypes").toAbsolutePath().normalize();
@@ -168,11 +164,10 @@ public class PrototypeController {
                     .body(Map.of("message", "ログインが必要です"));
         }
 
-        // 2. ユーザーID取得 & サービス呼び出し
-        UserEntity loginUser = userRepository.findByEmail(customUser.getUsername());
-        prototypeService.deletePrototype(id, loginUser.getId());
+        // 2. サービスに「プロトタイプID」と「ログインユーザーのemail (またはusername)」を渡すだけ！
+        prototypeService.deletePrototype(id, customUser.getUsername());
 
-        // 3. 成功時レスポンス（失敗時はGlobalExceptionHandlerが各ステータスコードでキャッチ）
+        // 3. 成功時レスポンス
         return ResponseEntity.ok().body(Map.of("message", "削除が完了しました"));
     }
 }
