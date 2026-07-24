@@ -42,11 +42,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                
                 .requestMatchers("/api/images/**").permitAll()
+                                   
+                // ユーザー・認証関連
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
 

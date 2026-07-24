@@ -1,0 +1,119 @@
+/* app/users/[id]/UserDetail.module.css */
+
+.container {
+  max-width: 64rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2rem;
+  padding-top: 3rem;
+}
+
+.section {
+  margin-bottom: 4rem;
+}
+
+.heading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 1.5rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+.tableRow {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tableHeader {
+  padding: 1rem 1.5rem;
+  width: 12rem;
+  background-color: #f9fafb;
+  text-align: left;
+  color: #374151;
+  font-weight: 700;
+  border-right: 1px solid #e5e7eb;
+}
+
+.tableData {
+  padding: 1rem 1.5rem;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
+.emptyText {
+  color: #6b7280;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 2.5rem 2rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.imageWrapper {
+  aspect-ratio: 1 / 1;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.imageWrapper:hover {
+  opacity: 0.8;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardTitle {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+.cardSlogan {
+  font-size: 0.875rem;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.authorWrapper {
+  text-align: right;
+  margin-top: auto;
+}
+
+.authorLink {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.authorLink:hover {
+  text-decoration: underline;
+}

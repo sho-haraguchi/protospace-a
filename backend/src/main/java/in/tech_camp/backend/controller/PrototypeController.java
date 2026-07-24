@@ -15,23 +15,25 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal; // 👈 追加
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.PrototypeForm;
+import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.service.PrototypeService;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
 public class PrototypeController {
 
@@ -131,5 +133,22 @@ public class PrototypeController {
     @GetMapping("/prototypes/{id}")
     public PrototypeEntity showPrototypeDetail(@PathVariable Integer id) {
         return prototypeService.findById(id);
+    }
+
+    /**
+     * プロトタイプ編集
+     * PUT: /app/prototypes/{id}/update
+     */
+    @PutMapping("/prototypes/{id}")
+    public PrototypeEntity updatePrototype(
+            @PathVariable Integer id, 
+            @ModelAttribute @Validated PrototypeEditForm form,
+            HttpSession session) throws IOException {
+       // セッションからログイン中のユーザーを取り出す
+        UserEntity currentUser = (UserEntity) session.getAttribute("user");
+        if (currentUser == null) {
+            throw new RuntimeException("ログインが必要です。");
+        }
+        return prototypeService.updatePrototype(id, form, currentUser.getId());
     }
 }

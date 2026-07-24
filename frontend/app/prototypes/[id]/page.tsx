@@ -2,6 +2,10 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import styles from './page.module.css';
 import { getPrototypeDetail } from '@/lib/api/prototypes';
+import { getComments } from '@/lib/api/comments';
+import CommentSection from '@/app/components/CommentSection';
+
+const IMAGE_BASE_URL = 'http://localhost:8080/api/images';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -9,11 +13,21 @@ interface PageProps {
 
 export default async function PrototypeDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const prototype = await getPrototypeDetail(id);
+
+  const [prototype, initialComments] = await Promise.all([
+    getPrototypeDetail(id),
+    getComments(Number(id)).catch(() => []),
+  ]);
 
   if (!prototype) {
     notFound();
   }
+
+  const imageUrl = prototype.image
+    ? prototype.image.startsWith('http')
+      ? prototype.image
+      : `${IMAGE_BASE_URL}/${prototype.image}`
+    : 'https://placehold.co/600x400?text=No+Image';
 
   return (
     <div className={styles.container}>
@@ -38,7 +52,7 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
       {/* 画像 */}
       <div className={styles.imageWrapper}>
         <img
-          src={prototype.image || 'https://placehold.co/600x400?text=No+Image'}
+          src={imageUrl}
           alt={prototype.name}
           className={styles.image}
         />
@@ -55,6 +69,12 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
         <h2 className={styles.sectionTitle}>コンセプト</h2>
         <p className={styles.sectionText}>{prototype.concept}</p>
       </div>
+
+      {/* コメント機能 */}
+      <CommentSection
+        prototypeId={Number(id)}
+        initialComments={initialComments}
+      />
     </div>
   );
 }

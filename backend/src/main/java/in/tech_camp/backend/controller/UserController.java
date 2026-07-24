@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.UserEntity;
@@ -58,6 +60,7 @@ public class UserController {
             UserEntity registeredUser = userService.registerUser(userForm);
             
             if (session != null) {
+                setSpringSecurityContext(registeredUser, session);
                 session.setAttribute("user", registeredUser);
             }
 
@@ -99,6 +102,8 @@ public class UserController {
             UserEntity loggedInUser = userService.login(loginForm);
 
             // 1. 既存のセッション保存
+            setSpringSecurityContext(loggedInUser, session);
+
             session.setAttribute("user", loggedInUser);
 
             // 2. ★ Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
@@ -119,7 +124,7 @@ public class UserController {
             return ResponseEntity.ok(loggedInUser);
 
         } catch (RuntimeException e) {
-            // ログイン失敗：エラーメッセージをステータス401で返す
+            // ログイン失敗：エラーメッセージをステータス401（Unauthorized = 認証未許可）で返す
             Map<String, String> error = new HashMap<>();
             error.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -149,12 +154,54 @@ public class UserController {
         if (session != null) {
             session.invalidate();
         }
+        SecurityContextHolder.clearContext();
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "ログアウトしました");
         return ResponseEntity.ok(response);
     }
+
+  /**
+   * ユーザー詳細ページ表示（showMypage）
+   */
+  @GetMapping("/{id}")
+  public ResponseEntity<Map<String, Object>> showMypage(@PathVariable Integer id) {
+      // Serviceからユーザー情報とプロトタイプ一覧のMapを受け取る
+      Map<String, Object> response = userService.getUserDetail(id);
+
+      // ユーザーが存在しない場合は 404 Not Found を返す
+      if (response == null) {
+          return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+      }
+
+      // 取得できた場合は 200 OK とともにデータを返す
+      return ResponseEntity.ok(response);
+  }
     /**
+     * Spring Security の SecurityContext に認証ユーザーを書き込むメソッド
+     */
+    private void setSpringSecurityContext(UserEntity user, HttpSession session) {
+        CustomUserDetail customUserDetail = new CustomUserDetail(user);
+        
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        customUserDetail, 
+                        null, 
+                        customUserDetail.getAuthorities()
+                );
+
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
+        context.setAuthentication(authentication);
+        SecurityContextHolder.setContext(context);
+
+        // Spring Security が参照するセッションキーにコンテキストを保存
+        session.setAttribute(
+            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, 
+            context
+        );
+    }
+
+   /**
    * ログイン画面表示（showLogin）
    */
 

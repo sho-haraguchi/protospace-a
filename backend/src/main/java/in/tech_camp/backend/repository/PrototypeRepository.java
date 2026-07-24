@@ -7,10 +7,14 @@ import org.apache.ibatis.annotations.Options;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
+
 import in.tech_camp.backend.entity.PrototypeEntity;
 
 @Mapper
@@ -33,9 +37,23 @@ public interface PrototypeRepository {
 
 
   // プロトタイプ詳細画面表示
-  @Select("SELECT p.*, u.name AS \"user.name\" " +
+  @Select("SELECT p.*, u.id AS user_id, u.name AS user_name " +
             "FROM prototypes p " +
             "LEFT JOIN users u ON p.user_id = u.id " +
             "WHERE p.id = #{id}")
+    @Results({
+      @Result(property = "user.id", column = "user_id"),
+      @Result(property = "user.name", column = "user_name"),
+      @Result(property = "userId", column = "user_id") 
+    })
     PrototypeEntity findById(Integer id);
+
+    //プロトタイプ編集
+  @Update("UPDATE prototypes SET name = #{name}, slogan = #{slogan}, concept = #{concept}, image = #{image} WHERE id = #{id}")
+     void update(PrototypeEntity prototype);
+  /**
+   * 指定したユーザーIDに紐づくプロトタイプを取得するSQL
+   */
+  @Select("SELECT * FROM prototypes WHERE user_id = #{userId}")
+  List<PrototypeEntity> findByUserId(Integer userId);
 }

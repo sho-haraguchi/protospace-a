@@ -1,5 +1,9 @@
 package in.tech_camp.backend.service;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -7,6 +11,8 @@ import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.LoginForm;
 import in.tech_camp.backend.form.UserForm;
 import in.tech_camp.backend.repository.UserRepository;
+import in.tech_camp.backend.entity.PrototypeEntity;
+import in.tech_camp.backend.repository.PrototypeRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -14,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
     
     private final UserRepository userRepository;
+    private final PrototypeRepository prototypeRepository;
     private final PasswordEncoder passwordEncoder;
     
     /**
@@ -65,4 +72,28 @@ public class UserService {
         // 認証成功なら、ログインユーザーの情報を返す
         return user;
     }
+
+    /**
+     * ユーザー情報とプロトタイプを取得するメソッド
+     */
+    public Map<String, Object> getUserDetail(Integer userId) {
+        // ユーザー情報を取得
+        UserEntity user = userRepository.findById(userId);
+        
+        // ユーザーが存在しない場合は null を返し、Controller側で404エラーとして扱う
+        if (user == null) {
+            return null;
+        }
+
+        // そのユーザーが投稿したプロトタイプ一覧を取得
+        List<PrototypeEntity> prototypes = prototypeRepository.findByUserId(userId);
+
+        // 画面に返すためのデータをMapにまとめる
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", user);
+        response.put("prototypes", prototypes);
+
+        return response;
+    }
+
 }
