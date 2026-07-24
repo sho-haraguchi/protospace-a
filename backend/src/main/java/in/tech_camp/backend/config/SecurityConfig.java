@@ -31,7 +31,7 @@ public class SecurityConfig {
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
             
-            // ★ セッションと SecurityContext のリポジトリを明確に紐付け
+            // セッションと SecurityContext のリポジトリを明確に紐付け
             .securityContext(context -> context
                 .securityContextRepository(securityContextRepository())
             )
@@ -51,15 +51,15 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
                 
-                // プロトタイプ関連
+                // プロトタイプ関連：閲覧系（GET）と画像フォルダーは未ログインOK
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
-// 削除処理はログイン必須（認証済みユーザーのみ）にする
-.requestMatchers(HttpMethod.POST, "/api/prototypes/*/delete").authenticated()                .requestMatchers(HttpMethod.DELETE, "/api/prototypes/*").permitAll() // DELETEメソッドにも対応できるように追加
-                // 投稿処理も通過させる（コントローラー側で判定）
-                .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll()
-
-                // 画像フォルダ (/uploads/**) へのアクセスを未ログインでも許可
                 .requestMatchers("/uploads/**").permitAll()
+
+                // プロトタイプ関連：書き込み系（投稿・編集・削除）はすべてログイン必須（authenticated）
+                .requestMatchers(HttpMethod.POST, "/api/prototypes").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/prototypes/**").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/prototypes/*/delete").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/prototypes/**").authenticated()
 
                 .anyRequest().authenticated());
 
