@@ -39,11 +39,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
-                
+
+                // ★ プロトタイプ関連（GETもPOSTも許可するように追加）
                 // プロトタイプ関連
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll()
-                                   
+
                 .anyRequest().authenticated());
 
         return http.build();

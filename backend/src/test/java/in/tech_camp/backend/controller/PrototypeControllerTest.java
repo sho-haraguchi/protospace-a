@@ -26,6 +26,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.service.PrototypeService;
+import in.tech_camp.backend.form.PrototypeEditForm;
 
 @ExtendWith(MockitoExtension.class)
 class PrototypeControllerTest {
@@ -104,6 +105,32 @@ class PrototypeControllerTest {
         // Service に正確に validForm オブジェクトが渡っているか検証
         verify(prototypeService).createPrototype(validForm, 1);
     }
+
+    @Test
+    @DisplayName("正常なデータで編集リクエストが送られた場合、Serviceの更新処理が呼び出されること")
+    void updatePrototype_Success_ShouldCallService() throws IOException {
+        Integer prototypeId = 1;
+        PrototypeEditForm editForm = new PrototypeEditForm();
+        editForm.setName("編集後のプロトタイプ名");
+        editForm.setSlogan("編集後のキャッチコピー");
+        editForm.setConcept("編集後のコンセプト");
+        editForm.setImage(validImage);
+
+        PrototypeEntity updatedEntity = new PrototypeEntity();
+        updatedEntity.setId(prototypeId);
+        updatedEntity.setName("編集後のプロトタイプ名");
+        updatedEntity.setImage("uuid_test.jpg");
+
+        when(prototypeService.updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any()))
+                .thenReturn(updatedEntity);
+
+        // 実行
+        PrototypeEntity result = prototypeController.updatePrototype(prototypeId, editForm, null);
+
+        // 検証
+        assertNotNull(result);
+        assertEquals("編集後のプロトタイプ名", result.getName());
+        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any());
   @Nested
     @DisplayName("2. プロトタイプ一覧取得機能")
     class GetAllPrototypes {

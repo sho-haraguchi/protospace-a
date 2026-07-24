@@ -13,6 +13,7 @@ interface PrototypeFormProps {
     name?: string;
     slogan?: string;
     concept?: string;
+    image?: string;
   };
   errorMessages: string[];
   onSubmit: (formData: FormData) => void;
@@ -89,11 +90,25 @@ const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormPr
       {/* プロトタイプの画像 */}
       <div className={styles.field}>
         <label className={styles['field-label']}>プロトタイプの画像</label>
+        
+        {initialData?.image && (
+          <div className="mb-3">
+            <p className="text-sm text-gray-500 mb-1">現在の登録画像：</p>
+            <img
+              src={`http://localhost:8080/api/images/${initialData.image}`}
+              alt="現在の画像"
+              className="w-48 h-auto object-cover border border-gray-300 rounded"
+            />
+          </div>
+        )}
+
         <input
           type="file"
           accept="image/*"
           className={styles['input-file']}
-          {...register('image', { required: '画像を選択してください' })}
+          {...register('image', { 
+             required: initialData ? false : '画像を選択してください' 
+          })}
         />
         {errors.image && <p className={styles['error-text']}>{errors.image.message}</p>}
       </div>

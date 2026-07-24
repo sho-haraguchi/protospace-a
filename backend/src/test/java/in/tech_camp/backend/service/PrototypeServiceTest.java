@@ -22,6 +22,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.repository.PrototypeRepository;
+import in.tech_camp.backend.form.PrototypeEditForm;
 
 @ExtendWith(MockitoExtension.class)
 class PrototypeServiceTest {
@@ -106,5 +107,91 @@ class PrototypeServiceTest {
 
         // 例外発生のため DB への insert 処理が一度も実行されないことを検証
         verify(prototypeRepository, never()).insert(any(PrototypeEntity.class));
+    }
+
+    @Test
+    @DisplayName("画像変更なしでプロトタイプを更新した場合、既存の画像パスが維持されること")
+    void updatePrototype_Success_WithoutImage() throws IOException {
+        Integer prototypeId = 1;
+        Integer currentUserId = 1;
+        PrototypeEditForm editForm = new PrototypeEditForm();
+        editForm.setName("編集後のプロトタイプ名");
+        editForm.setSlogan("編集後のキャッチコピー");
+        editForm.setConcept("編集後のコンセプト");
+        editForm.setImage(null); // 画像は更新しないため null
+
+        PrototypeEntity existingEntity = new PrototypeEntity();
+        existingEntity.setId(prototypeId);
+        existingEntity.setUserId(currentUserId);
+        existingEntity.setImage("existing_image.png"); // 既存の画像パス
+
+        when(prototypeRepository.findById(prototypeId)).thenReturn(existingEntity);
+
+        // 実行
+        PrototypeEntity result = prototypeService.updatePrototype(prototypeId, editForm, currentUserId);
+
+        // 検証: 画像無しプロトタイプにならないことの証明
+        assertNotNull(result);
+        assertEquals("編集後のプロトタイプ名", result.getName());
+        assertEquals("existing_image.png", result.getImage()); // 旧画像が保持されていること
+
+        // 画像保存処理は呼ばれていないこと、DB更新が1回呼ばれていること
+        verify(storageService, never()).storeFile(any());
+        verify(prototypeRepository, times(1)).update(existingEntity);
+    }
+
+    @Test
+    @DisplayName("画像変更ありでプロトタイプを更新した場合、新しい画像が保存されパスが更新されること")
+    void updatePrototype_Success_WithImage() throws IOException {
+        Integer prototypeId = 1;
+        Integer currentUserId = 1;
+        MockMultipartFile newImage = new MockMultipartFile(
+                "image", "new_image.jpg", "image/jpeg", "new image data".getBytes()
+        );
+
+        PrototypeEditForm editForm = new PrototypeEditForm();
+        editForm.setName("編集後のプロトタイプ名");
+        editForm.setSlogan("編集後のキャッチコピー");
+        editForm.setConcept("編集後のコンセプト");
+        editForm.setImage(newImage); // 新しい画像を添付
+
+        PrototypeEntity existingEntity = new PrototypeEntity();
+        existingEntity.setId(prototypeId);
+        existingEntity.setUserId(currentUserId);
+        existingEntity.setImage("existing_image.png");
+
+        when(prototypeRepository.findById(prototypeId)).thenReturn(existingEntity);
+        when(storageService.storeFile(newImage)).thenReturn("uuid_new_image.jpg");
+
+        // 実行
+        PrototypeEntity result = prototypeService.updatePrototype(prototypeId, editForm, currentUserId);
+
+        // 検証
+        assertNotNull(result);
+        assertEquals("uuid_new_image.jpg", result.getImage()); // 新しいファイル名に上書きされていること
+        verify(storageService, times(1)).storeFile(newImage);
+        verify(prototypeRepository, times(1)).update(existingEntity);
+    }
+
+    @Test
+    @DisplayName("投稿者本人以外のユーザーが編集しようとした場合、例外が発生して更新されないこと")
+    void updatePrototype_Fail_NotOwner() {
+        Integer prototypeId = 1;
+        Integer ownerId = 1;      // 本当の所有者
+        Integer attackerId = 99;  // 別ユーザー
+
+        PrototypeEntity existingEntity = new PrototypeEntity();
+        existingEntity.setId(prototypeId);
+        existingEntity.setUserId(ownerId); // 所有者は 1
+
+        when(prototypeRepository.findById(prototypeId)).thenReturn(existingEntity);
+
+        // 別人のIDで実行すると RuntimeException が発生することを証明
+        assertThrows(RuntimeException.class, () -> {
+            prototypeService.updatePrototype(prototypeId, new PrototypeEditForm(), attackerId);
+        });
+
+        // データベースの上書き保存が絶対に実行されていないことを確認
+        verify(prototypeRepository, never()).update(any());
     }
 }

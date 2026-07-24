@@ -11,3 +11,13 @@ export async function getPrototypeDetail(id: string): Promise<PrototypeData | nu
     return null;
   }
 }
+
+// プロトタイプ編集・更新
+export async function updatePrototype(id: string, formData: FormData) {
+  const response = await apiClient.put(`/prototypes/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+}
