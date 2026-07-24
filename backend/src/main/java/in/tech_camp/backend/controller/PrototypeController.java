@@ -6,12 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal; // 👈 追加
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.service.PrototypeService;
@@ -44,8 +47,6 @@ public class PrototypeController {
     @GetMapping("/images/{filename:.+}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) {
         try {
-            // 1. filenameにパス区切り文字（/ や \）が含まれている場合の対策
-            // 純粋なファイル名部分（例: "xxx.jpg"）だけを抽出して不正なパス指定を防ぐ
             String cleanFileName = filename;
             if (cleanFileName.contains("/")) {
                 cleanFileName = cleanFileName.substring(cleanFileName.lastIndexOf('/') + 1);
@@ -54,7 +55,6 @@ public class PrototypeController {
                 cleanFileName = cleanFileName.substring(cleanFileName.lastIndexOf('\\') + 1);
             }
 
-            // 2. パスの解決とセキュリティチェック（上位ディレクトリへのアクセスを防ぐ）
             Path filePath = this.imageStorageDir.resolve(cleanFileName).normalize();
             if (!filePath.startsWith(this.imageStorageDir)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -62,17 +62,15 @@ public class PrototypeController {
 
             Resource resource = new UrlResource(filePath.toUri());
 
-            // 3. ファイルの存在確認
             if (!resource.exists() || !resource.isReadable()) {
                 return ResponseEntity.notFound().build();
             }
 
-            // 4. MIMEタイプの安全な判定（エラーで落ちないようにtry-catch）
             String contentType = null;
             try {
                 contentType = Files.probeContentType(filePath);
             } catch (IOException e) {
-                // OS環境によって失敗することがあるためスルー
+                // スルー
             }
 
             if (contentType == null) {
@@ -92,13 +90,29 @@ public class PrototypeController {
     }
 
     /**
-     * プロトタイプ新規投稿機能
+     * プロトタイプ新規投稿機能（ログイン中のユーザーIDを適用）
      * POST: /api/prototypes
      */
     @PostMapping("/prototypes")
-    public PrototypeEntity postPrototypes(@ModelAttribute @Validated PrototypeForm prototypeForm) throws IOException {
-        // 仮のユーザーID (1) でプロトタイプを作成
-        return prototypeService.createPrototype(prototypeForm, 1);
+    public ResponseEntity<?> postPrototypes(
+            @ModelAttribute @Validated PrototypeForm prototypeForm,
+            @AuthenticationPrincipal CustomUserDetail currentUser) {
+
+        // 1. ログインセッションが届いていない場合のガード（401を返す）
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "ログインが必要です。再度ログインしてお試しください。"));
+        }
+
+        try {
+            // 2. 「仮の1」ではなく「currentUser.getId()」を使って保存！
+            PrototypeEntity createdPrototype = prototypeService.createPrototype(prototypeForm, currentUser.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdPrototype);
+        
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "画像の保存に失敗しました。"));
+        }
     }
 
     /**

@@ -1,12 +1,11 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { apiClient } from '@/lib/api/client'; 
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
-
-interface PrototypeListProps {
-  prototypes: PrototypeData[];
-}
 
 interface PrototypeFormProps {
   initialData?: {
@@ -14,11 +13,12 @@ interface PrototypeFormProps {
     slogan?: string;
     concept?: string;
   };
-  errorMessages: string[];
-  onSubmit: (formData: FormData) => void;
 }
 
-const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormProps) => {
+const PrototypeForm = ({ initialData }: PrototypeFormProps) => {
+  const router = useRouter();
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
+
   const { register, handleSubmit, formState: { errors } } = useForm<PrototypeData>({
     defaultValues: {
       name: initialData?.name || '',
@@ -27,21 +27,38 @@ const PrototypeForm = ({ errorMessages, onSubmit, initialData }: PrototypeFormPr
     }
   });
 
-  const handleFormSubmit = (data: PrototypeData) => {
-    const formData = new FormData();
-    formData.append('name', data.name);
-    formData.append('slogan', data.slogan);
-    formData.append('concept', data.concept);
+const handleFormSubmit = async (data: PrototypeData) => {
+  setErrorMessages([]);
 
-    if (data.image && data.image[0]) {
-      formData.append('image', data.image[0]);
+  const formData = new FormData();
+  formData.append('name', data.name);
+  formData.append('slogan', data.slogan);
+  formData.append('concept', data.concept);
+
+  if (data.image && data.image[0]) {
+    formData.append('image', data.image[0]);
+  }
+
+  try {
+    // ヘッダーの明示指定を外し、apiClientに任せる
+    await apiClient.post('/prototypes', formData);
+
+    // 投稿成功時
+    router.push('/');
+    router.refresh();
+  } catch (error: any) {
+    console.error('投稿エラー:', error);
+
+    if (error.response?.data?.messages) {
+      setErrorMessages(error.response.data.messages);
+    } else if (error.response?.data?.message) {
+      setErrorMessages([error.response.data.message]);
+    } else {
+      setErrorMessages(['投稿の保存に失敗しました。']);
     }
-
-    onSubmit(formData);
-  };
-
+  }
+};
   return (
-    // ★2. styles['form-container'] のように指定
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
       
       {/* エラーメッセージ表示エリア */}

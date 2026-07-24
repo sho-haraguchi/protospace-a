@@ -5,6 +5,10 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.LoginForm;
 import in.tech_camp.backend.form.UserForm;
@@ -73,7 +78,7 @@ public class UserController {
         return createUser(userForm, bindingResult, null);
     }
 
-    /**
+/**
      * ログイン処理
      */
     @PostMapping("/login")
@@ -93,7 +98,20 @@ public class UserController {
         try {
             UserEntity loggedInUser = userService.login(loginForm);
 
+            // 1. 既存のセッション保存
             session.setAttribute("user", loggedInUser);
+
+            // 2. ★ Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
+            CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+
+            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+
+            // セッションに Spring Security の Context を明示的に紐付け
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
 
             loggedInUser.setPassword(null);
 
@@ -101,13 +119,13 @@ public class UserController {
             return ResponseEntity.ok(loggedInUser);
 
         } catch (RuntimeException e) {
-          // ログイン失敗：エラーメッセージをステータス401（Unauthorized = 認証未許可）で返す
+            // ログイン失敗：エラーメッセージをステータス401で返す
             Map<String, String> error = new HashMap<>();
             error.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
         }
     }
-
+    
     /**
      * ログイン中ユーザー情報取得 API（Headerコンポーネント用）
      */
