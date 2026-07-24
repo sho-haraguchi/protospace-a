@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal; // 👈 追加
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -26,8 +27,8 @@ import org.springframework.web.bind.annotation.RestController;
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.entity.UserEntity;
-import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.form.PrototypeEditForm;
+import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.service.PrototypeService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -150,5 +151,23 @@ public class PrototypeController {
             throw new RuntimeException("ログインが必要です。");
         }
         return prototypeService.updatePrototype(id, form, currentUser.getId());
+    }
+
+    @PostMapping("/prototypes/{id}/delete")
+    public ResponseEntity<?> deletePrototype(
+            @PathVariable("id") Integer id,
+            @AuthenticationPrincipal UserDetails customUser) {
+
+        // 1. 未ログインチェック
+        if (customUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "ログインが必要です"));
+        }
+
+        // 2. サービスに「プロトタイプID」と「ログインユーザーのemail (またはusername)」を渡すだけ！
+        prototypeService.deletePrototype(id, customUser.getUsername());
+
+        // 3. 成功時レスポンス
+        return ResponseEntity.ok().body(Map.of("message", "削除が完了しました"));
     }
 }

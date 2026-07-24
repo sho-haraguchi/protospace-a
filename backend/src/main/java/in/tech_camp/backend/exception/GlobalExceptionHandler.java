@@ -32,7 +32,19 @@ public class GlobalExceptionHandler {
                 .body(Map.of("messages", List.of("画像の保存に失敗しました")));
     }
 
-    // 3. その他の予期せぬエラーが発生した場合（500 Internal Server Error）
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleNotFoundException(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of("messages", List.of(ex.getMessage())));
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<?> handleSecurityException(SecurityException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("messages", List.of(ex.getMessage())));
+    }
+
+    // 5. その他の予期せぬエラーが発生した場合（500 Internal Server Error）
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneralException(Exception ex) {
         ex.printStackTrace();
