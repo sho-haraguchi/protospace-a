@@ -45,7 +45,6 @@ public class PrototypeService {
      * プロトタイプ一覧取得
      */
     public List<PrototypeEntity> findAllPrototypes() {
-        
         return prototypeRepository.findAll();
     }
 
@@ -56,6 +55,9 @@ public class PrototypeService {
         return prototypeRepository.findById(id);
     }
 
+    /**
+     * プロトタイプ編集処理
+     */
     @Transactional
     public PrototypeEntity updatePrototype(Integer id, PrototypeEditForm form, Integer currentUserId) throws IOException {
         // データベースから現在のデータを取得
@@ -87,5 +89,27 @@ public class PrototypeService {
         prototypeRepository.update(prototype);
         
         return prototype;
+    }
+
+    /**
+     * プロトタイプ削除処理
+     */
+    @Transactional
+    public void deletePrototype(Integer id, Integer currentUserId) {
+        // 1. データベースから該当の投稿を取得
+        PrototypeEntity prototype = prototypeRepository.findById(id);
+
+        // 2. 削除対象が存在しない場合 -> 404 になる
+        if (prototype == null) {
+            throw new IllegalArgumentException("該当の投稿が存在しません。");
+        }
+
+        // 3. 本人確認（投稿者ID と ログインユーザーID の比較） -> 403 になる
+        if (!prototype.getUserId().equals(currentUserId)) {
+            throw new SecurityException("自分の投稿のみ削除できます。");
+        }
+
+        // 4. 本人の場合のみ削除を実行
+        prototypeRepository.deleteById(id);
     }
 }

@@ -43,15 +43,18 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .requestMatchers("/api/images/**").permitAll()
-                                   
+                                    
                 // ユーザー・認証関連
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
+                
+                // プロトタイプ関連
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
-
+// 削除処理はログイン必須（認証済みユーザーのみ）にする
+.requestMatchers(HttpMethod.POST, "/api/prototypes/*/delete").authenticated()                .requestMatchers(HttpMethod.DELETE, "/api/prototypes/*").permitAll() // DELETEメソッドにも対応できるように追加
                 // 投稿処理も通過させる（コントローラー側で判定）
                 .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll()
 

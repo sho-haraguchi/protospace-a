@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/prototypes/:id/delete', // /prototypes/10/delete へのアクセスを検知
+        destination: '/',                  // トップページへ転送
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
