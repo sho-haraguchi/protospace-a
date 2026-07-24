@@ -8,9 +8,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -27,27 +30,39 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable)
+            
+            // ★ セッションと SecurityContext のリポジトリを明確に紐付け
+            .securityContext(context -> context
+                .securityContextRepository(securityContextRepository())
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // ログイン時に必ずセッション作成
+            )
+
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/error").permitAll()
-                .requestMatchers("/css/**", "/images/**", "/").permitAll()
                 .requestMatchers("/api/images/**").permitAll()
-                
+                                   
                 // ユーザー・認証関連
                 .requestMatchers(HttpMethod.POST, "/api/users").permitAll()  
                 .requestMatchers(HttpMethod.POST, "/api/users/login").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/api/users/me").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/users/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/logout").permitAll()
-
-                // ★ プロトタイプ関連（GETもPOSTも許可するように追加）
-                // プロトタイプ関連
                 .requestMatchers(HttpMethod.GET, "/api/prototypes/**").permitAll()
+
+                // 投稿処理も通過させる（コントローラー側で判定）
                 .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll()
 
                 .anyRequest().authenticated());
 
         return http.build();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
 
     @Bean
@@ -58,10 +73,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Next.jsからのアクセスを許可
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true); // Cookie (JSESSIONID) 送受信を許可
+        configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
