@@ -1,7 +1,11 @@
 package in.tech_camp.backend.service;
 
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,9 +21,11 @@ import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.LoginForm;
 import in.tech_camp.backend.form.UserForm;
+import in.tech_camp.backend.repository.PrototypeRepository;
 import in.tech_camp.backend.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +33,9 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PrototypeRepository prototypeRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -160,5 +169,38 @@ class UserServiceTest {
 
         // 検証
         assertEquals("メールアドレスまたはパスワードが正しくありません。", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("4-1. ユーザー詳細正常系: 存在するユーザーIDの場合、ユーザー情報とプロトタイプ一覧が返ること")
+    void getUserDetail_Success() {
+        Integer userId = 1;
+        UserEntity mockUser = new UserEntity();
+        mockUser.setId(userId);
+        mockUser.setName("テストユーザー");
+
+        PrototypeEntity mockPrototype = new PrototypeEntity();
+        List<PrototypeEntity> mockPrototypes = List.of(mockPrototype);
+
+        when(userRepository.findById(userId)).thenReturn(mockUser);
+        when(prototypeRepository.findByUserId(userId)).thenReturn(mockPrototypes);
+
+        Map<String, Object> result = userService.getUserDetail(userId);
+
+        assertNotNull(result);
+        assertEquals(mockUser, result.get("user"));
+        assertEquals(mockPrototypes, result.get("prototypes"));
+    }
+
+    @Test
+    @DisplayName("4-2. ユーザー詳細異常系: 存在しないユーザーIDの場合、nullが返ること")
+    void getUserDetail_NotFound() {
+        Integer userId = 999;
+        when(userRepository.findById(userId)).thenReturn(null);
+
+        Map<String, Object> result = userService.getUserDetail(userId);
+
+        assertNull(result);
+        verify(userRepository).findById(userId);
     }
 }

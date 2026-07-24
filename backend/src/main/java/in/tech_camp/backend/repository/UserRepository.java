@@ -28,4 +28,10 @@ public interface UserRepository {
  　*/
   @Select("SELECT * FROM users WHERE email = #{email}")
   UserEntity findByEmail(String email);
+
+  /**
+   * ユーザー情報をIDで検索するSQL
+   */
+  @Select("SELECT id, name, profile, affiliation, position FROM users WHERE id = #{id}")
+  UserEntity findById(Integer id);
 }
