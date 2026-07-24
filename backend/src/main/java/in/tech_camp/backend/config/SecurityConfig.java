@@ -58,6 +58,9 @@ public class SecurityConfig {
                 // 投稿処理も通過させる（コントローラー側で判定）
                 .requestMatchers(HttpMethod.POST, "/api/prototypes").permitAll()
 
+                // 画像フォルダ (/uploads/**) へのアクセスを未ログインでも許可
+                .requestMatchers("/uploads/**").permitAll()
+
                 .anyRequest().authenticated());
 
         return http.build();
