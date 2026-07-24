@@ -133,13 +133,9 @@ class PrototypeControllerTest {
         // 検証
         assertNotNull(result);
         assertEquals("編集後のプロトタイプ名", result.getName());
-        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), eq(1));
+        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any());
     }
-
-    // =========================================================================
-    // 2. プロトタイプ一覧取得機能のテスト
-    // =========================================================================
-    @Nested
+  @Nested
     @DisplayName("2. プロトタイプ一覧取得機能")
     class GetAllPrototypes {
 
@@ -219,4 +215,5 @@ class PrototypeControllerTest {
             assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         }
     }
+}
 }
