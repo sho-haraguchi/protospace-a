@@ -5,7 +5,7 @@ import { getPrototypeDetail } from '@/lib/api/prototypes';
 import { getComments } from '@/lib/api/comments';
 import CommentSection from '@/app/components/CommentSection';
 
-const IMAGE_BASE_URL = 'http://localhost:8080/uploads/prototypes';
+const IMAGE_BASE_URL = 'http://localhost:8080/api/images';
 
 interface PageProps {
   params: Promise<{ id: string }>;
