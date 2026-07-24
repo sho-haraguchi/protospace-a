@@ -5,6 +5,8 @@ import { getPrototypeDetail } from '@/lib/api/prototypes';
 import { getComments } from '@/lib/api/comments';
 import CommentSection from '@/app/components/CommentSection';
 
+const IMAGE_BASE_URL = 'http://localhost:8080/uploads/prototypes';
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
@@ -20,6 +22,12 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
   if (!prototype) {
     notFound();
   }
+
+  const imageUrl = prototype.image
+    ? prototype.image.startsWith('http')
+      ? prototype.image
+      : `${IMAGE_BASE_URL}/${prototype.image}`
+    : 'https://placehold.co/600x400?text=No+Image';
 
   return (
     <div className={styles.container}>
@@ -44,7 +52,7 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
       {/* 画像 */}
       <div className={styles.imageWrapper}>
         <img
-          src={prototype.image || 'https://placehold.co/600x400?text=No+Image'}
+          src={imageUrl}
           alt={prototype.name}
           className={styles.image}
         />

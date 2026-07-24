@@ -8,9 +8,10 @@ import org.apache.ibatis.annotations.Options;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
+
 import in.tech_camp.backend.entity.PrototypeEntity;
 
 @Mapper
@@ -38,4 +39,10 @@ public interface PrototypeRepository {
             "LEFT JOIN users u ON p.user_id = u.id " +
             "WHERE p.id = #{id}")
     PrototypeEntity findById(Integer id);
+
+  /**
+   * 指定したユーザーIDに紐づくプロトタイプを取得するSQL
+   */
+  @Select("SELECT * FROM prototypes WHERE user_id = #{userId}")
+  List<PrototypeEntity> findByUserId(Integer userId);
 }
