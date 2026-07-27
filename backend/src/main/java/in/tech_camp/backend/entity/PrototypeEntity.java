@@ -1,5 +1,7 @@
 package in.tech_camp.backend.entity;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -12,4 +14,7 @@ public class PrototypeEntity {
   private Integer userId;
   //投稿者の名前表示するためUserEntityに関連
   private UserEntity user;
+
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }
