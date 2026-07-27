@@ -21,3 +21,10 @@ export async function updatePrototype(id: string, formData: FormData) {
   });
   return response.data;
 }
+
+/**
+ * プロトタイプ削除
+ */
+export async function deletePrototype(id: number | string): Promise<void> {
+  await apiClient.post(`/prototypes/${id}/delete`);
+}

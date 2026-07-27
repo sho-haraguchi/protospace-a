@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation';
 import styles from './page.module.css';
 import { getPrototypeDetail } from '@/lib/api/prototypes';
 import { getComments } from '@/lib/api/comments';
+import { getCurrentUserServer } from '@/lib/api/users';
 import CommentSection from '@/app/components/CommentSection';
-import DeleteButton from './DeleteButton'; 
+import DeleteButton from './DeleteButton';
 
 const IMAGE_BASE_URL = 'http://localhost:8080/api/images';
 
@@ -15,14 +16,19 @@ interface PageProps {
 export default async function PrototypeDetailPage({ params }: PageProps) {
   const { id } = await params;
 
-  const [prototype, initialComments] = await Promise.all([
+  // プロトタイプ詳細、コメント、ログインユーザーを並列取得
+  const [prototype, initialComments, currentUser] = await Promise.all([
     getPrototypeDetail(id),
     getComments(Number(id)).catch(() => []),
+    getCurrentUserServer(),
   ]);
 
   if (!prototype) {
     notFound();
   }
+
+  // 投稿者本人かを判定
+  const isOwner = currentUser != null && currentUser.id === prototype.user?.id;
 
   const imageUrl = prototype.image
     ? prototype.image.startsWith('http')
@@ -42,13 +48,15 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
         </Link>
       </p>
 
-      {/* 編集・削除ボタン */}
-      <div className={styles.buttonGroup}>
-        <Link href={`/prototypes/${prototype.id}/edit`} className={styles.btn}>
-          編集する
-        </Link>
-        <DeleteButton id={prototype.id} className={styles.btn} />
-      </div>
+      {/* 投稿者本人の場合のみ 編集・削除ボタンを表示 */}
+      {isOwner && (
+        <div className={styles.buttonGroup}>
+          <Link href={`/prototypes/${prototype.id}/edit`} className={styles.btn}>
+            編集する
+          </Link>
+          <DeleteButton id={prototype.id} className={styles.btn} />
+        </div>
+      )}
 
       {/* 画像 */}
       <div className={styles.imageWrapper}>
