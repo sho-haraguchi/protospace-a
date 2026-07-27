@@ -3,27 +3,33 @@ import { redirect } from 'next/navigation';
 import PrototypeForm from '@/app/components/PrototypeForm';
 import styles from '@/app/components/PrototypeForm.module.css';
 
-// サーバー側でログインユーザー情報を取得する関数（プロジェクトの認証ロジックに合わせて書き換えてください）
-async function getSessionUser() {
+async function checkAuthOnServer() {
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get('JSESSIONID')?.value; // 例: Spring BootのJSESSIONID等
+  const sessionCookie = cookieStore.get('JSESSIONID')?.value;
 
-  // セッションCookieがない場合は未ログインと判定
-  if (!sessionToken) {
-    return null;
+  // JSESSIONID ヘッダーを付けてバックエンドへ直接問い合わせる場合
+  try {
+    const res = await fetch('http://localhost:8080/api/users/me', {
+      headers: {
+        Cookie: sessionCookie ? `JSESSIONID=${sessionCookie}` : '',
+      },
+      // SSR時にキャッシュさせない
+      cache: 'no-store',
+    });
+
+    return res.ok;
+  } catch (error) {
+    return false;
   }
-
-  // 必要に応じてバックエンドの認証状態確認APIを呼ぶか、クッキーの存在だけで判定
-  return sessionToken;
 }
 
 const CreatePrototypePage = async () => {
-  // 1. サーバー側でセッション確認
-  const user = await getSessionUser();
+  // サーバー側で認証チェック
+  const isAuthenticated = await checkAuthOnServer();
 
-  // 2. 未ログインの場合、ページを描画する前にトップページへリダイレクト！
-  if (!user) {
-    redirect('/');
+  // 未ログインの場合は画面を描画せずに即座にログインページ（またはトップ）へリダイレクト
+  if (!isAuthenticated) {
+    redirect('/login');
   }
 
   return (

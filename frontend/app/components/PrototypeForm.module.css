@@ -64,10 +64,29 @@
   resize: vertical;
 }
 
-/* ファイル選択部分 */
+/* ファイル選択ボタン全体の指定 */
 .input-file {
-  font-size: 13px;
-  margin-top: 2px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+/* ボタン部分のみのカスタムスタイル */
+.input-file::file-selector-button {
+  padding: 5px 5px;
+  margin-right: 12px;
+  background-color: #b2ddfa; 
+  color: #ffffff;            
+  border: none;
+  border-radius: 4px;       
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* ホバー時のスタイル */
+.input-file::file-selector-button:hover {
+  background-color: #7ec8f8; 
 }
 
 /* 保存するボタン */

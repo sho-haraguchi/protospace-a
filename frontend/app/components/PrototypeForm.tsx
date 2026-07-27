@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { apiClient } from '@/lib/api/client'; 
@@ -19,22 +19,6 @@ interface PrototypeFormProps {
 const PrototypeForm = ({ initialData }: PrototypeFormProps) => {
   const router = useRouter();
   const [errorMessages, setErrorMessages] = useState<string[]>([]);
-
-  // ⏬ 画面読み込み時にログインチェックを実施（未ログインなら即リダイレクト）
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await apiClient.get('/users/me');
-      } catch (error: any) {
-        // 未ログイン(401)の場合はポップアップなしで即座にトップページへ遷移
-        if (error.response?.status === 401) {
-          router.replace('/login');
-        }
-      }
-    };
-
-    checkAuth();
-  }, [router]);
 
   const { register, handleSubmit, formState: { errors } } = useForm<PrototypeData>({
     defaultValues: {
@@ -65,9 +49,9 @@ const PrototypeForm = ({ initialData }: PrototypeFormProps) => {
     } catch (error: any) {
       console.error('投稿エラー:', error);
 
-      // 投稿処理時に 401 が返ってきた場合も即座にトップページへ遷移
+      // 投稿セッションが切れていた場合のリダイレクト
       if (error.response?.status === 401) {
-        router.replace('/');
+        router.replace('/login');
         return;
       }
 
@@ -83,7 +67,6 @@ const PrototypeForm = ({ initialData }: PrototypeFormProps) => {
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
-      
       {/* エラーメッセージ表示エリア */}
       {errorMessages.length > 0 && (
         <div className={styles['error-messages-box']}>
