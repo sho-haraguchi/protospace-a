@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
+
 const nextConfig: NextConfig = {
   output: 'standalone',
 
@@ -23,7 +25,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'https://protospace-backend.onrender.com/api/:path*',
+        destination: `${BACKEND_URL}/api/:path*`,
       },
     ];
   },
