@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import axios from "axios";
+import { apiClient } from "@/lib/api/client";
 import styles from "./UserDetail.module.css";
 
 type User = {
@@ -24,8 +25,8 @@ type UserDetailResponse = {
   prototypes: Prototype[];
 };
 
-const API_URL = "http://localhost:8080/api/users";
-const IMAGE_BASE_URL = 'http://localhost:8080/uploads/prototypes';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 
 async function getUserDetail(id: string): Promise<UserDetailResponse | null> {
   if (!id || id === "undefined") {
@@ -33,7 +34,7 @@ async function getUserDetail(id: string): Promise<UserDetailResponse | null> {
   }
 
   try {
-    const res = await axios.get<UserDetailResponse>(`${API_URL}/${id}`);
+    const res = await apiClient.get<UserDetailResponse>(`/users/${id}`);
     return res.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
