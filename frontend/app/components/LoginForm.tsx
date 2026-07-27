@@ -1,10 +1,8 @@
 'use client'
 
 import React, { useState } from 'react';
-import axios from 'axios';
-import styles from './logun.module.css';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+import { apiClient } from '@/lib/api/client';
+import styles from '@/app/login/login.module.css';
 
 interface LoginFormProps {
   onSuccess?: () => void; 
@@ -20,11 +18,7 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setMessage('');
 
     try {
-      const response =  await axios.post(
-        `${API_BASE_URL}/users/Login`,
-        { email, password},
-        { withCredentials: true}
-      );
+      const response = await apiClient.post('/users/login', { email, password });
 
       // ユーザー情報を保持
       localStorage.setItem('user', JSON.stringify(response.data));
@@ -47,9 +41,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
 
   return (
     <form onSubmit={handleLogin} className={styles.form}>
-      {message && <p className='{styles.errorMssage'>{message}</p>}
+      {message && <p className={styles.errorMessage}>{message}</p>}
 
-      <div className='{styles.inputGroup'>
+      <div className={styles.inputGroup}>
         <label className={styles.label}>メールアドレス</label>
         <input
           type="email"
@@ -72,6 +66,10 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
            required
         />
       </div>
+
+      <button type="submit" className={styles.submitBtn}>
+        ログイン
+      </button>
     </form>
   );
 }
