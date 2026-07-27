@@ -1,5 +1,3 @@
-'use client';
-
 import SignupForm from '@/app/components/SignupForm';
 import styles from './signup.module.css';
 
