@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
-
 const nextConfig: NextConfig = {
   output: 'standalone',
 
@@ -21,11 +19,15 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  /* バックエンドへのプロキシ設定 */
   async rewrites() {
+    // rewrites 実行時に毎回環境変数を動的評価し、ビルド時の固定化を防止
+    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+
     return [
       {
         source: '/api/:path*',
-        destination: `${BACKEND_URL}/api/:path*`,
+        destination: `${backendUrl}/api/:path*`,
       },
     ];
   },
