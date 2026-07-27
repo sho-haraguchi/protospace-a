@@ -141,16 +141,28 @@ public class PrototypeController {
      * PUT: /app/prototypes/{id}/update
      */
     @PutMapping("/prototypes/{id}")
-    public PrototypeEntity updatePrototype(
-            @PathVariable Integer id, 
-            @ModelAttribute @Validated PrototypeEditForm form,
-            HttpSession session) throws IOException {
-       // セッションからログイン中のユーザーを取り出す
-        UserEntity currentUser = (UserEntity) session.getAttribute("user");
+    public ResponseEntity<?> updatePrototype(
+        @PathVariable Integer id, 
+        @ModelAttribute @Validated PrototypeEditForm form,
+        @AuthenticationPrincipal CustomUserDetail currentUser) {
+    
         if (currentUser == null) {
-            throw new RuntimeException("ログインが必要です。");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "ログインが必要です"));
         }
-        return prototypeService.updatePrototype(id, form, currentUser.getId());
+        try {
+            PrototypeEntity updatedPrototype = prototypeService.updatePrototype(id, form, currentUser.getId());
+            return ResponseEntity.ok(updatedPrototype);
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "画像の保存に失敗しました"));
+        }
     }
 
     @PostMapping("/prototypes/{id}/delete")
