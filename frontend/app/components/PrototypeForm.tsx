@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import axios from 'axios'; // isAxiosError 用に追加
 import { apiClient } from '@/lib/api/client'; 
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
@@ -17,7 +18,6 @@ interface PrototypeFormProps {
     concept?: string;
     image?: string;
   };
-
   onSubmit?: (formData: FormData) => Promise<void>;
   errorMessages?: string[];
 }
@@ -30,6 +30,11 @@ const PrototypeForm = ({
   const router = useRouter();
   const [internalErrorMessages, setInternalErrorMessages] = useState<string[]>([]);
 
+  // 親（編集画面）からエラーメッセージが渡されていればそれを使い、なければ内部のエラーを使う
+  const displayErrorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
+    ? externalErrorMessages
+    : internalErrorMessages;
+
   const { register, handleSubmit, formState: { errors } } = useForm<PrototypeData>({
     defaultValues: {
       name: initialData?.name || '',
@@ -39,6 +44,7 @@ const PrototypeForm = ({
   });
 
   const handleFormSubmit = async (data: PrototypeData) => {
+    // 内部エラーメッセージのクリア
     setInternalErrorMessages([]);
 
     const formData = new FormData();
@@ -50,35 +56,43 @@ const PrototypeForm = ({
       formData.append('image', data.image[0]);
     }
 
-    if (externalOnSubmit) {
-      await externalOnSubmit(formData);
-      return;
-    }
-
     try {
+      // ① 編集時 (PUT) の処理を先に実行
+      if (externalOnSubmit) {
+        await externalOnSubmit(formData);
+        return;
+      }
+
+      // ② 新規投稿時 (POST) の処理
       await apiClient.post('/prototypes', formData);
       router.push('/');
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('投稿エラー:', error);
 
-      if (error.response?.data?.messages) {
-        setInternalErrorMessages(error.response.data.messages);
-      } else if (error.response?.data?.message) {
-        setInternalErrorMessages([error.response.data.message]);
+      // AxiosError かどうかの型ガードを追加して安全に参照する
+      if (axios.isAxiosError(error)) {
+        // 投稿セッションが切れていた場合のリダイレクト
+        if (error.response?.status === 401) {
+          router.replace('/login');
+          return;
+        }
+
+        if (error.response?.data?.messages) {
+          setInternalErrorMessages(error.response.data.messages);
+        } else if (error.response?.data?.message) {
+          setInternalErrorMessages([error.response.data.message]);
+        } else {
+          setInternalErrorMessages(['投稿の保存に失敗しました。']);
+        }
       } else {
-        setInternalErrorMessages(['投稿の保存に失敗しました。']);
+        setInternalErrorMessages(['予期せぬエラーが発生しました。']);
       }
     }
   };
 
-  const displayErrorMessages = externalErrorMessages.length > 0 
-    ? externalErrorMessages 
-    : internalErrorMessages;
-
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
-      
       {/* エラーメッセージ表示エリア */}
       {displayErrorMessages.length > 0 && (
         <div className={styles['error-messages-box']}>
