@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import axios from "axios";
 import { apiClient } from "@/lib/api/client";
 import styles from "./UserDetail.module.css";
+import EditButton from "@/app/components/EditButton";
 
 type User = {
   id: number;
@@ -71,7 +72,11 @@ export default async function UserDetailPage({
     <main className={styles.container}>
       {/* ユーザー情報セクション */}
       <section className={styles.section}>
+       <div className={styles.headerGroup}>
         <h2 className={styles.heading}>{user.name}さんの情報</h2>
+         <EditButton pageUserId={user.id} />
+       </div>
+
         <table className={styles.table}>
           <tbody>
             <tr className={styles.tableRow}>
