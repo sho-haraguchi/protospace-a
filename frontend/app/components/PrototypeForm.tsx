@@ -8,6 +8,9 @@ import { apiClient } from '@/lib/api/client';
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
+
 interface PrototypeFormProps {
   initialData?: {
     name?: string;
@@ -22,13 +25,13 @@ interface PrototypeFormProps {
 const PrototypeForm = ({ 
   initialData, 
   onSubmit: externalOnSubmit, 
-  errorMessages: externalErrorMessages 
+  errorMessages: externalErrorMessages = [] 
 }: PrototypeFormProps) => {
   const router = useRouter();
   const [internalErrorMessages, setInternalErrorMessages] = useState<string[]>([]);
 
   // 親（編集画面）からエラーメッセージが渡されていればそれを使い、なければ内部のエラーを使う
-  const errorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
+  const displayErrorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
     ? externalErrorMessages
     : internalErrorMessages;
 
@@ -91,9 +94,9 @@ const PrototypeForm = ({
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
       {/* エラーメッセージ表示エリア */}
-      {errorMessages.length > 0 && (
+      {displayErrorMessages.length > 0 && (
         <div className={styles['error-messages-box']}>
-          {errorMessages.map((error, index) => (
+          {displayErrorMessages.map((error, index) => (
             <p key={index} className={styles['error-text']}>{error}</p>
           ))}
         </div>
@@ -140,7 +143,11 @@ const PrototypeForm = ({
           <div className="mb-3">
             <p className="text-sm text-gray-500 mb-1">現在の登録画像：</p>
             <img
-              src={`http://localhost:8080/api/images/${initialData.image}`}
+              src={
+                initialData.image.startsWith('http')
+                  ? initialData.image
+                  : `${IMAGE_BASE_URL}/${initialData.image}`
+              }
               alt="現在の画像"
               className="w-48 h-auto object-cover border border-gray-300 rounded"
             />

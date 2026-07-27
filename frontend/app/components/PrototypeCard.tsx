@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 
-const IMAGE_BASE_URL = 'http://localhost:8080/uploads/prototypes';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 
 interface PrototypeCardProps {
   prototype: PrototypeData;
@@ -27,7 +28,7 @@ const PrototypeCard = ({ prototype }: PrototypeCardProps) => {
         className="w-full aspect-square bg-[#A5DCE0] mb-4 overflow-hidden relative block hover:opacity-80 transition-opacity"
       >
         <img 
-          src={`http://localhost:8080/api/images/${prototype.image}`} 
+          src={imageUrl} 
           alt={prototype.name} 
           className="w-full h-full object-cover" 
         />

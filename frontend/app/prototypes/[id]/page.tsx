@@ -7,7 +7,8 @@ import { getCurrentUserServer } from '@/lib/api/users';
 import CommentSection from '@/app/components/CommentSection';
 import DeleteButton from './DeleteButton';
 
-const IMAGE_BASE_URL = 'http://localhost:8080/api/images';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 
 interface PageProps {
   params: Promise<{ id: string }>;
