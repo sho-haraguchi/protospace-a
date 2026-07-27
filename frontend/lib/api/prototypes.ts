@@ -28,3 +28,18 @@ export async function updatePrototype(id: string, formData: FormData) {
 export async function deletePrototype(id: number | string): Promise<void> {
   await apiClient.post(`/prototypes/${id}/delete`);
 }
+
+/**
+ * プロトタイプ検索
+ */
+export async function searchPrototypes(query: string): Promise<PrototypeData[]> {
+  try {
+    const response = await apiClient.get<PrototypeData[]>('/search', {
+      params: { query }, 
+    });
+    return response.data;
+  } catch (error) {
+    console.error('プロトタイプの検索に失敗しました:', error);
+    return []; 
+  }
+}

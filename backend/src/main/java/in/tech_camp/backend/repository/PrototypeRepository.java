@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.One;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
@@ -55,4 +56,12 @@ public interface PrototypeRepository {
 
   @Delete("DELETE FROM prototypes WHERE id = #{id}")
   void deleteById(Integer id);
+
+  // プロトタイプ検索機能
+  @Select("SELECT * FROM prototypes WHERE name LIKE CONCAT('%', #{query}, '%')")
+  @Results({
+      @Result(property = "user", column = "user_id", 
+              one = @One(select = "in.tech_camp.backend.repository.UserRepository.findByID"))
+  })
+  List<PrototypeEntity> findByTextContaining(String query);
 }

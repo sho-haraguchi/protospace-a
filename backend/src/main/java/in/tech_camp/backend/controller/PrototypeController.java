@@ -22,15 +22,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
-import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.service.PrototypeService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -181,5 +180,11 @@ public class PrototypeController {
 
         // 3. 成功時レスポンス
         return ResponseEntity.ok().body(Map.of("message", "削除が完了しました"));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<PrototypeEntity>> searchPrototypes(@RequestParam("query") String query) {
+        List<PrototypeEntity> prototypes = prototypeService.searchPrototypes(query);  
+        return ResponseEntity.ok(prototypes);
     }
 }
