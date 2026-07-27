@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import axios from 'axios'; // isAxiosError 用に追加
 import { apiClient } from '@/lib/api/client'; 
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
@@ -18,7 +19,6 @@ interface PrototypeFormProps {
   errorMessages?: string[];
 }
 
-// 引数で onSubmit と errorMessages を受け取るように変更
 const PrototypeForm = ({ 
   initialData, 
   onSubmit: externalOnSubmit, 
@@ -41,6 +41,7 @@ const PrototypeForm = ({
   });
 
   const handleFormSubmit = async (data: PrototypeData) => {
+    // 内部エラーメッセージのクリア
     setInternalErrorMessages([]);
 
     const formData = new FormData();
@@ -53,34 +54,42 @@ const PrototypeForm = ({
     }
 
     try {
-      // 編集時は親から渡された更新用処理(PUT)を実行してここで終了する
+      // ① 編集時 (PUT) の処理を先に実行
       if (externalOnSubmit) {
         await externalOnSubmit(formData);
         return;
       }
 
-      // 新規投稿時のみ従来のPOST処理を実行する
+      // ② 新規投稿時 (POST) の処理
       await apiClient.post('/prototypes', formData);
-
-      // 投稿成功時
       router.push('/');
       router.refresh();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('投稿エラー:', error);
 
-      if (error.response?.data?.messages) {
-        setInternalErrorMessages(error.response.data.messages);
-      } else if (error.response?.data?.message) {
-        setInternalErrorMessages([error.response.data.message]);
+      // AxiosError かどうかの型ガードを追加して安全に参照する
+      if (axios.isAxiosError(error)) {
+        // 投稿セッションが切れていた場合のリダイレクト
+        if (error.response?.status === 401) {
+          router.replace('/login');
+          return;
+        }
+
+        if (error.response?.data?.messages) {
+          setInternalErrorMessages(error.response.data.messages);
+        } else if (error.response?.data?.message) {
+          setInternalErrorMessages([error.response.data.message]);
+        } else {
+          setInternalErrorMessages(['投稿の保存に失敗しました。']);
+        }
       } else {
-        setInternalErrorMessages(['投稿の保存に失敗しました。']);
+        setInternalErrorMessages(['予期せぬエラーが発生しました。']);
       }
     }
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
-      
       {/* エラーメッセージ表示エリア */}
       {errorMessages.length > 0 && (
         <div className={styles['error-messages-box']}>
