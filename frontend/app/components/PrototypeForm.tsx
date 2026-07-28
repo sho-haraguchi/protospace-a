@@ -8,12 +8,8 @@ import { apiClient } from '@/lib/api/client';
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
 
-// 環境変数からベースURLを取得
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-
-// 画像表示用のベースURLを生成
-const ORIGIN_URL = API_BASE_URL.replace(/\/api\/?$/, '');
-const IMAGE_BASE_URL = `${ORIGIN_URL}/api/images`;
+const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 
 interface PrototypeFormProps {
   initialData?: {

@@ -74,7 +74,7 @@ public class PrototypeService {
         // 所有者チェック
         // DBの投稿者ID(user_id)と、現在ログインしているユーザーIDが一致しない場合は例外を投げる
         if (!prototype.getUserId().equals(currentUserId)) {
-            throw new RuntimeException("他のユーザーの投稿を編集する権限がありません。");
+            throw new SecurityException("他のユーザーの投稿を編集する権限がありません。");
         }
 
         // 新しいデータで上書き
