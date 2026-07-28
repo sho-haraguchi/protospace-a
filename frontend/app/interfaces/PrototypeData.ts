@@ -7,4 +7,7 @@ export interface PrototypeData {
   image: string;
   concept: string;
   user: UserData;
+  // バックエンドから返却されるタイムスタンプを追加
+  createdAt?: string; // 作成日時
+  updatedAt?: string; // 更新日時
 }
