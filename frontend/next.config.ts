@@ -1,7 +1,5 @@
 import type { NextConfig } from "next";
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8080';
-
 const nextConfig: NextConfig = {
   output: 'standalone',
 
@@ -22,10 +20,18 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
+    const rawUrl =
+      process.env.BACKEND_URL ||
+      process.env.INTERNAL_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'http://localhost:8080';
+
+    const baseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+
     return [
       {
         source: '/api/:path*',
-        destination: `${BACKEND_URL}/api/:path*`,
+        destination: `${baseUrl}/api/:path*`,
       },
     ];
   },
