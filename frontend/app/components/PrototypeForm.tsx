@@ -3,10 +3,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import axios from 'axios'; // isAxiosError 用に追加
+import axios from 'axios';
 import { apiClient } from '@/lib/api/client'; 
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
+
+// 環境変数からベースURLを取得
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
+
+// 画像表示用のベースURLを生成
+const ORIGIN_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+const IMAGE_BASE_URL = `${ORIGIN_URL}/api/images`;
 
 interface PrototypeFormProps {
   initialData?: {
@@ -22,13 +29,15 @@ interface PrototypeFormProps {
 const PrototypeForm = ({ 
   initialData, 
   onSubmit: externalOnSubmit, 
-  errorMessages: externalErrorMessages 
+  errorMessages: externalErrorMessages = [] 
 }: PrototypeFormProps) => {
   const router = useRouter();
   const [internalErrorMessages, setInternalErrorMessages] = useState<string[]>([]);
+  // 二重送信防止（ダブルクリック対策）用のState
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 親（編集画面）からエラーメッセージが渡されていればそれを使い、なければ内部のエラーを使う
-  const errorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
+  const displayErrorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
     ? externalErrorMessages
     : internalErrorMessages;
 
@@ -41,7 +50,11 @@ const PrototypeForm = ({
   });
 
   const handleFormSubmit = async (data: PrototypeData) => {
-    // 内部エラーメッセージのクリア
+    // すでに送信中なら何もしない（連打ガード）
+    if (isSubmitting) return;
+
+    // 送信開始：フラグを立ててボタンを無効化
+    setIsSubmitting(true);
     setInternalErrorMessages([]);
 
     const formData = new FormData();
@@ -85,15 +98,18 @@ const PrototypeForm = ({
       } else {
         setInternalErrorMessages(['予期せぬエラーが発生しました。']);
       }
+    } finally {
+      // 処理完了（成功・失敗問わず）時に送信中フラグを解除
+      setIsSubmitting(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} className={styles['form-container']}>
       {/* エラーメッセージ表示エリア */}
-      {errorMessages.length > 0 && (
+      {displayErrorMessages.length > 0 && (
         <div className={styles['error-messages-box']}>
-          {errorMessages.map((error, index) => (
+          {displayErrorMessages.map((error, index) => (
             <p key={index} className={styles['error-text']}>{error}</p>
           ))}
         </div>
@@ -140,7 +156,11 @@ const PrototypeForm = ({
           <div className="mb-3">
             <p className="text-sm text-gray-500 mb-1">現在の登録画像：</p>
             <img
-              src={`http://localhost:8080/api/images/${initialData.image}`}
+              src={
+                initialData.image.startsWith('http')
+                  ? initialData.image
+                  : `${IMAGE_BASE_URL}/${initialData.image}`
+              }
               alt="現在の画像"
               className="w-48 h-auto object-cover border border-gray-300 rounded"
             />
@@ -160,8 +180,12 @@ const PrototypeForm = ({
 
       {/* 保存するボタン */}
       <div className={styles.actions}>
-        <button type="submit" className={styles['submit-btn']}>
-          保存する
+        <button 
+          type="submit" 
+          className={styles['submit-btn']}
+          disabled={isSubmitting} // 送信中はクリック不可
+        >
+          {isSubmitting ? '保存中...' : '保存する'}
         </button>
       </div>
     </form>
