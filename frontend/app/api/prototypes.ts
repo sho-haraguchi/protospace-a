@@ -2,14 +2,14 @@ import axios from 'axios';
 import { PrototypeData } from '../interfaces/PrototypeData';
 
 /**
- * 実行環境（サーバー側 vs ブラウザ側）に応じて適切な API ベース URL を取得する
+ * 実行環境に応じて適切な API ベース URL を取得
  */
 const getApiBaseUrl = () => {
   if (typeof window === 'undefined') {
-    // サーバーサイド（Node.js / SSR）実行時はフルURLを使用
+    // サーバーサイド実行時はフルURLを使用
     return process.env.INTERNAL_API_BASE_URL || 'http://localhost:8080/api';
   }
-  // クライアントサイド（ブラウザ）実行時はプロキシ用の相対パスを使用
+  // クライアントサイド実行時はプロキシ用の相対パスを使用
   return process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 };
 
