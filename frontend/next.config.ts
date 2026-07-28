@@ -19,15 +19,19 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  /* バックエンドへのプロキシ設定 */
   async rewrites() {
-    // rewrites 実行時に毎回環境変数を動的評価し、ビルド時の固定化を防止
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
+    const rawUrl =
+      process.env.BACKEND_URL ||
+      process.env.INTERNAL_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'http://localhost:8080';
+
+    const baseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
 
     return [
       {
         source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`,
+        destination: `${baseUrl}/api/:path*`,
       },
     ];
   },
