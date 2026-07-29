@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import SortTabs from '@/app/components/SortTabs';
 import PrototypeList from '@/app/components/PrototypeList';
 import { findAllPrototypes } from '@/lib/api/prototypes';
 import { getCurrentUserServer } from '@/lib/api/users'; // ログインユーザーを取得する関数を追加
