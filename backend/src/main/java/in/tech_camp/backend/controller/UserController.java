@@ -15,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    
 
     /**
      * 新規ユーザー登録処理（createUser）
@@ -186,4 +188,57 @@ public class UserController {
         // 4. セッションへ Context を明示的に紐付け
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
         }
+    }
+
+    /**
+     * ユーザー情報更新処理（updateUser）
+     */
+    @PutMapping
+    public ResponseEntity<?> updateUser(
+            @RequestBody UserForm userEditForm,
+            HttpSession session) {
+
+        UserEntity sessionUser = (UserEntity) session.getAttribute("user");
+        if (sessionUser == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "ログインが必要です。");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+
+        try {
+            // userRepository ではなく userService のメソッドを呼び出す
+            UserEntity updatedUser = userService.updateUser(sessionUser.getId(), userEditForm);
+
+            // セッションと SecurityContext の更新
+            setSpringSecurityContext(updatedUser, session);
+            session.setAttribute("user", updatedUser);
+
+            updatedUser.setPassword(null);
+            return ResponseEntity.ok(updatedUser);
+
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "更新処理に失敗しました。");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+   /**
+   * ログイン画面表示（showLogin）
+   */
+
+
+
+  /**
+   * ログイン失敗時、再度ログイン画面へ遷移させる処理（loginError）
+   */
+
+
+
+  /**
+   * ユーザー詳細ページ表示（showMypage）
+   */
 }

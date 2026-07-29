@@ -30,4 +30,8 @@ public class UserForm {
 
     @NotBlank(message = "役職は必須です")
     private String position;
+
+    private String currentPassword;
+    private String newPassword;
+    private String newPasswordConfirmation;
 }
