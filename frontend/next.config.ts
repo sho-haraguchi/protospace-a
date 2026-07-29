@@ -20,10 +20,18 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
+    const rawUrl =
+      process.env.BACKEND_URL ||
+      process.env.INTERNAL_API_BASE_URL ||
+      process.env.NEXT_PUBLIC_API_BASE_URL ||
+      'http://localhost:8080';
+
+    const baseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '');
+
     return [
       {
         source: '/api/:path*',
-        destination: 'https://protospace-backend.onrender.com/api/:path*',
+        destination: `${baseUrl}/api/:path*`,
       },
     ];
   },
