@@ -13,11 +13,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.UserEntity;
@@ -98,32 +98,23 @@ public class UserController {
         }
 
         try {
+            // 1. UserServiceでDBとの認証チェックを行う
             UserEntity loggedInUser = userService.login(loginForm);
 
-            // 1. 既存のセッション保存
+            // 2. Spring Security 認証コンテキストの作成 & セッション保存を一括実行
             setSpringSecurityContext(loggedInUser, session);
 
+            // 3. アプリケーション独自のセッション保存
             session.setAttribute("user", loggedInUser);
 
-            // 2. ★ Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
-            CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            securityContext.setAuthentication(authentication);
-            SecurityContextHolder.setContext(securityContext);
-
-            // セッションに Spring Security の Context を明示的に紐付け
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
-
+            // パスワードをレスポンスに含めないためのクリア処理
             loggedInUser.setPassword(null);
 
-            // ログイン成功：ユーザー情報をステータス200（OK）で返す
+            // ログイン成功
             return ResponseEntity.ok(loggedInUser);
 
         } catch (RuntimeException e) {
-            // ログイン失敗：エラーメッセージをステータス401（Unauthorized = 認証未許可）で返す
+            // ログイン失敗（401 Unauthorized）
             Map<String, String> error = new HashMap<>();
             error.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -177,42 +168,22 @@ public class UserController {
       return ResponseEntity.ok(response);
   }
     /**
-     * Spring Security の SecurityContext に認証ユーザーを書き込むメソッド
+     * Spring Security に認証完了を伝え、@AuthenticationPrincipal が利用できる状態にしてセッションに保持する
      */
-    private void setSpringSecurityContext(UserEntity user, HttpSession session) {
-        CustomUserDetail customUserDetail = new CustomUserDetail(user);
-        
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        customUserDetail, 
-                        null, 
-                        customUserDetail.getAuthorities()
-                );
-
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
-
-        // Spring Security が参照するセッションキーにコンテキストを保存
-        session.setAttribute(
-            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, 
-            context
+    private void setSpringSecurityContext(UserEntity loggedInUser, HttpSession session) {
+        // 1. CustomUserDetail の作成
+        CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
+        // 2. 認証トークンの作成
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, 
+                null, 
+                userDetails.getAuthorities()
         );
-    }
-
-   /**
-   * ログイン画面表示（showLogin）
-   */
-
-
-
-  /**
-   * ログイン失敗時、再度ログイン画面へ遷移させる処理（loginError）
-   */
-
-
-
-  /**
-   * ユーザー詳細ページ表示（showMypage）
-   */
+        // 3. SecurityContext の作成とスレッドへの設定
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // 4. セッションへ Context を明示的に紐付け
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+        }
 }
