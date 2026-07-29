@@ -36,6 +36,7 @@ public interface PrototypeRepository {
             "</script>")
     @Results({
       //"user_name" として取得した投稿者の名前を"user"フィールドの"name"フィールドにセット
+      @Result(property = "userId", column = "user_id"),
       @Result(property = "user.id", column = "user_id"),
       @Result(property = "user.name", column = "user_name"),
       @Result(property = "createdAt", column = "created_at"),
