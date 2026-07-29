@@ -107,7 +107,7 @@ public class UserController {
 
             session.setAttribute("user", loggedInUser);
 
-            // 2. ★ Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
+            // 2.Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
             CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
@@ -218,7 +218,7 @@ public class UserController {
         }
 
         try {
-            // 🌟 userRepository ではなく userService のメソッドを呼び出す！
+            // userRepository ではなく userService のメソッドを呼び出す
             UserEntity updatedUser = userService.updateUser(sessionUser.getId(), userEditForm);
 
             // セッションと SecurityContext の更新
