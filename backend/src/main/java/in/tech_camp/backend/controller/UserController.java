@@ -188,7 +188,7 @@ public class UserController {
         // 4. セッションへ Context を明示的に紐付け
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
         }
-    }
+    
 
     /**
      * ユーザー情報更新処理（updateUser）
@@ -226,6 +226,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+}
    /**
    * ログイン画面表示（showLogin）
    */
@@ -241,4 +242,3 @@ public class UserController {
   /**
    * ユーザー詳細ページ表示（showMypage）
    */
-}
