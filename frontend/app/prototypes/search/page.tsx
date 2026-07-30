@@ -1,36 +1,40 @@
-import SearchForm from '@/app/components/SearchForm';
-import PrototypeList from '@/app/components/PrototypeList';
 import { searchPrototypes } from '@/lib/api/prototypes';
+import PrototypeList from '@/app/components/PrototypeList';
+import { PrototypeData } from '@/app/interfaces/PrototypeData'; 
+import SearchForm from '@/app/components/SearchForm';
 
-interface SearchPageProps {
+type Props = {
   searchParams: Promise<{ query?: string }>;
-}
+};
 
-const SearchPage = async ({ searchParams }: SearchPageProps) => {
-  const { query = '' } = await searchParams;
-  const prototypes = query ? await searchPrototypes(query) : [];
+export default async function SearchPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const query = params.query || '';
+
+  let prototypes: PrototypeData[] = [];
+
+  if (query) {
+    try {
+      prototypes = await searchPrototypes(query);
+    } catch (error) {
+      console.error('検索エラー:', error);
+    }
+  }
 
   return (
-    <div className="p-8 md:p-16">
+    <main className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <SearchForm initialQuery={query} />
       </div>
-
-      {query && (
-        <h1 className="text-xl font-bold mb-6 text-gray-800">
-          「{query}」の検索結果（{prototypes.length}件）
-        </h1>
-      )}
+      <h1 className="text-2xl font-bold mb-6">
+        「{query}」の検索結果（{prototypes.length}件）
+      </h1>
 
       {prototypes.length > 0 ? (
-        <div className="contents">
-          <PrototypeList prototypes={prototypes} />
-        </div>
+        <PrototypeList prototypes={prototypes} />
       ) : (
         <p className="text-gray-500">該当するプロトタイプは見つかりませんでした。</p>
       )}
-    </div>
+    </main>
   );
-};
-
-export default SearchPage;
+}
