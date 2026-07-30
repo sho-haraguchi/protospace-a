@@ -1,13 +1,22 @@
 import Link from 'next/link';
+import SortTabs from '@/app/components/SortTabs';
 import PrototypeList from '@/app/components/PrototypeList';
 import { findAllPrototypes } from '@/lib/api/prototypes';
 import { getCurrentUserServer } from '@/lib/api/users.server'; // ログインユーザーを取得する関数を追加
 
 // async をつけて Server Component にする
-export default async function Home() {
+// Next.js App Router の Server Component は searchParams を Promise として受け取る
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  // パラメータを解決し、指定がない場合はデフォルトで 'created' とみなす
+  const resolvedParams = await searchParams;
+  const sort = resolvedParams.sort || 'created';
   // useEffect や useState を使わず、サーバー側で直接データを取得する
   const [prototypes, currentUser] = await Promise.all([
-    findAllPrototypes().catch((error) => {
+    findAllPrototypes(sort).catch((error) => {
       console.error('プロトタイプの取得に失敗しました:', error);
       return [];
     }),
@@ -30,6 +39,9 @@ export default async function Home() {
           </p>
         </div>
       )}
+
+      {/* ソート切り替えナビゲーションタブ */}
+      <SortTabs currentSort={sort} />
 
       {/* 作品一覧 */}
       <div className="contents">

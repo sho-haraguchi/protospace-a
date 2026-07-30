@@ -12,11 +12,11 @@ const getApiBaseUrl = () => {
   return process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 };
 
-// --- (追加) プロトタイプ一覧を取得する関数 ---
-export const findAllPrototypes = async (): Promise<PrototypeData[]> => {
+// --- プロトタイプ一覧を取得する関数 ---
+export const findAllPrototypes = async (sort: string = 'created'): Promise<PrototypeData[]> => {
   try {
     const baseUrl = getApiBaseUrl();
-    const response = await axios.get<PrototypeData[]>(`${baseUrl}/prototypes`, {
+    const response = await axios.get<PrototypeData[]>(`${baseUrl}/prototypes?sort=${sort}`, {
       withCredentials: true,
     });
     return response.data;

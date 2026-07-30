@@ -225,6 +225,7 @@ public class UserController {
             error.put("message", "更新処理に失敗しました。");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
+     }
     }
 }
    /**
