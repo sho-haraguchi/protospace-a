@@ -7,12 +7,12 @@ import java.util.Map;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.LoginForm;
 import in.tech_camp.backend.form.UserForm;
-import in.tech_camp.backend.repository.UserRepository;
-import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.repository.PrototypeRepository;
+import in.tech_camp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -94,6 +94,40 @@ public class UserService {
         response.put("prototypes", prototypes);
 
         return response;
+    }
+
+    /**
+     * ユーザー情報の更新処理
+     */
+    public UserEntity updateUser(Integer userId, UserForm userForm) {
+        UserEntity user = userRepository.findByID(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("ユーザーが存在しません。");
+        }
+
+        // 基本情報の更新
+        user.setName(userForm.getName());
+        user.setProfile(userForm.getProfile());
+        user.setAffiliation(userForm.getAffiliation());
+        user.setPosition(userForm.getPosition());
+
+        // パスワード変更が入力されている場合の処理
+        if (userForm.getNewPassword() != null && !userForm.getNewPassword().isEmpty()) {
+            
+            // 現在のパスワードの照合
+            if (!passwordEncoder.matches(userForm.getCurrentPassword(), user.getPassword())) {
+                throw new IllegalArgumentException("現在のパスワードが正しくありません。");
+            }
+
+            // 新しいパスワードを暗号化してセット
+            String encodedPassword = passwordEncoder.encode(userForm.getNewPassword());
+            user.setPassword(encodedPassword);
+        }
+
+        // DBの更新（MyBatis等でのupdate実行）
+        userRepository.update(user);
+
+        return user;
     }
 
 }

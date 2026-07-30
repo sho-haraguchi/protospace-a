@@ -122,8 +122,10 @@ public class PrototypeController {
      * GET: /api/prototypes
      */
     @GetMapping("/prototypes")
-    public List<PrototypeEntity> showPrototypes() {
-        return prototypeService.findAllPrototypes(); 
+    public List<PrototypeEntity> showPrototypes(
+            @RequestParam(name = "sort", required = false, defaultValue = "created") String sort) {
+        // パラメータが未指定の場合は defaultValue により自動的に "created" が設定される
+        return prototypeService.findAllPrototypes(sort);
     }
 
     /**

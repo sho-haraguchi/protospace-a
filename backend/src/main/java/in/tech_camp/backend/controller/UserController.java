@@ -13,11 +13,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.UserEntity;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    
 
     /**
      * 新規ユーザー登録処理（createUser）
@@ -98,32 +100,23 @@ public class UserController {
         }
 
         try {
+            // 1. UserServiceでDBとの認証チェックを行う
             UserEntity loggedInUser = userService.login(loginForm);
 
-            // 1. 既存のセッション保存
+            // 2. Spring Security 認証コンテキストの作成 & セッション保存を一括実行
             setSpringSecurityContext(loggedInUser, session);
 
+            // 3. アプリケーション独自のセッション保存
             session.setAttribute("user", loggedInUser);
 
-            // 2. ★ Spring Security 側に認証完了を伝える（PrototypeControllerの@AuthenticationPrincipal用）
-            CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-
-            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-            securityContext.setAuthentication(authentication);
-            SecurityContextHolder.setContext(securityContext);
-
-            // セッションに Spring Security の Context を明示的に紐付け
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
-
+            // パスワードをレスポンスに含めないためのクリア処理
             loggedInUser.setPassword(null);
 
-            // ログイン成功：ユーザー情報をステータス200（OK）で返す
+            // ログイン成功
             return ResponseEntity.ok(loggedInUser);
 
         } catch (RuntimeException e) {
-            // ログイン失敗：エラーメッセージをステータス401（Unauthorized = 認証未許可）で返す
+            // ログイン失敗（401 Unauthorized）
             Map<String, String> error = new HashMap<>();
             error.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
@@ -177,29 +170,63 @@ public class UserController {
       return ResponseEntity.ok(response);
   }
     /**
-     * Spring Security の SecurityContext に認証ユーザーを書き込むメソッド
+     * Spring Security に認証完了を伝え、@AuthenticationPrincipal が利用できる状態にしてセッションに保持する
      */
-    private void setSpringSecurityContext(UserEntity user, HttpSession session) {
-        CustomUserDetail customUserDetail = new CustomUserDetail(user);
-        
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        customUserDetail, 
-                        null, 
-                        customUserDetail.getAuthorities()
-                );
-
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(authentication);
-        SecurityContextHolder.setContext(context);
-
-        // Spring Security が参照するセッションキーにコンテキストを保存
-        session.setAttribute(
-            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, 
-            context
+    private void setSpringSecurityContext(UserEntity loggedInUser, HttpSession session) {
+        // 1. CustomUserDetail の作成
+        CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
+        // 2. 認証トークンの作成
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, 
+                null, 
+                userDetails.getAuthorities()
         );
-    }
+        // 3. SecurityContext の作成とスレッドへの設定
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
+        // 4. セッションへ Context を明示的に紐付け
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+        }
+    
 
+    /**
+     * ユーザー情報更新処理（updateUser）
+     */
+    @PutMapping
+    public ResponseEntity<?> updateUser(
+            @RequestBody UserForm userEditForm,
+            HttpSession session) {
+
+        UserEntity sessionUser = (UserEntity) session.getAttribute("user");
+        if (sessionUser == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "ログインが必要です。");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+
+        try {
+            // userRepository ではなく userService のメソッドを呼び出す
+            UserEntity updatedUser = userService.updateUser(sessionUser.getId(), userEditForm);
+
+            // セッションと SecurityContext の更新
+            setSpringSecurityContext(updatedUser, session);
+            session.setAttribute("user", updatedUser);
+
+            updatedUser.setPassword(null);
+            return ResponseEntity.ok(updatedUser);
+
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "更新処理に失敗しました。");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+     }
+    }
    /**
    * ログイン画面表示（showLogin）
    */
@@ -215,4 +242,3 @@ public class UserController {
   /**
    * ユーザー詳細ページ表示（showMypage）
    */
-}
