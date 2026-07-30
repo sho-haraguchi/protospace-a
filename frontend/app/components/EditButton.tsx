@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import axios from 'axios';
-import { apiClient } from '@/lib/api/client';
+import { getMe } from '@/lib/api/users';
 import styles from '@/app/users/[id]/UserDetail.module.css';
 
 interface EditButtonProps {
@@ -17,17 +16,13 @@ export default function EditButton({ pageUserId }: EditButtonProps) {
     const checkCurrentUser = async () => {
       try {
         // ログイン中のユーザー情報を取得 (/api/users/me)
-        const response = await apiClient.get('/users/me');
+        const currentUser = await getMe();
         
         // ログインユーザーのIDと、表示中のページのユーザーIDが一致する場合のみ表示
-        if (response.data && response.data.id === pageUserId) {
+        if (currentUser && currentUser.id === pageUserId) {
           setIsOwner(true);
         }
       } catch (error: unknown) {
-        if (axios.isAxiosError(error)) {
-          // 401 (未ログイン) などの場合は何も表示しない
-          console.log('未ログインまたは権限がありません:', error.response?.status);
-        }
         setIsOwner(false);
       }
     };

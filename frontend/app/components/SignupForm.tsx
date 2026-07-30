@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { apiClient } from '@/lib/api/client';
+import { signupUser, SignupParams } from '@/lib/api/users';
 import styles from '@/app/signup/signup.module.css';
 
 interface SignupFormProps {
@@ -32,7 +32,7 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
     }
 
     try {
-      const response = await apiClient.post('/users', {
+      const signupData: SignupParams = {
         email, 
         password, 
         passwordConfirmation,
@@ -40,8 +40,10 @@ export default function SignupForm({ onSuccess }: SignupFormProps) {
         profile,
         affiliation,
         position
-      });
+      };
 
+      const response = await signupUser(signupData);
+      
       if (response.status === 201 || response.status === 200) {
         if (onSuccess) {
           onSuccess();

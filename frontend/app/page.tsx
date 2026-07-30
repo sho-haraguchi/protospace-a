@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import PrototypeList from '@/app/components/PrototypeList';
 import { findAllPrototypes } from '@/lib/api/prototypes';
-import { getCurrentUserServer } from '@/lib/api/users'; // ログインユーザーを取得する関数を追加
+import { getCurrentUserServer } from '@/lib/api/users.server'; // ログインユーザーを取得する関数を追加
 
 // async をつけて Server Component にする
 export default async function Home() {

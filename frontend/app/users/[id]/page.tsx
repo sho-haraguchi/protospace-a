@@ -1,53 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import axios from "axios";
-import { apiClient } from "@/lib/api/client";
+import { getUserDetail, UserDetailResponse } from "@/lib/api/users";
 import styles from "./UserDetail.module.css";
 import EditButton from "@/app/components/EditButton";
 
-type User = {
-  id: number;
-  name: string;
-  profile: string;
-  affiliation: string;
-  position: string;
-};
-
-type Prototype = {
-  id: number;
-  name: string;
-  slogan: string;
-  concept: string;
-  image: string;
-};
-
-type UserDetailResponse = {
-  user: User;
-  prototypes: Prototype[];
-};
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
-
-async function getUserDetail(id: string): Promise<UserDetailResponse | null> {
-  if (!id || id === "undefined") {
-    return null;
-  }
-
-  try {
-    const res = await apiClient.get<UserDetailResponse>(`/users/${id}`);
-    return res.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 404) {
-        return null;
-      }
-      console.error("API Response Error:", error.response?.data);
-    }
-    console.error("getUserDetail Error:", error);
-    return null;
-  }
-}
 
 export default async function UserDetailPage({
   params,
@@ -60,7 +18,7 @@ export default async function UserDetailPage({
     notFound();
   }
 
-  const data = await getUserDetail(id);
+  const data: UserDetailResponse | null = await getUserDetail(id);
 
   if (!data || !data.user) {
     notFound();

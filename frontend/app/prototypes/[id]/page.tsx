@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import styles from './page.module.css';
 import { getPrototypeDetail } from '@/lib/api/prototypes';
 import { getComments } from '@/lib/api/comments';
-import { getCurrentUserServer } from '@/lib/api/users';
+import { getCurrentUserServer } from '@/lib/api/users.server';
 import CommentSection from '@/app/components/CommentSection';
 import DeleteButton from './DeleteButton';
 

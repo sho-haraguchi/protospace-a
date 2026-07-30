@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react';
-import { apiClient } from '@/lib/api/client';
+import { loginUser, LoginParams } from '@/lib/api/users';
 import styles from '@/app/login/login.module.css';
 
 interface LoginFormProps {
@@ -18,7 +18,9 @@ export default function LoginForm({ onSuccess }: LoginFormProps) {
     setMessage('');
 
     try {
-      const response = await apiClient.post('/users/login', { email, password });
+      const params: LoginParams = { email, password };
+
+      const response = await loginUser(params)
 
       // ユーザー情報を保持
       localStorage.setItem('user', JSON.stringify(response.data));
