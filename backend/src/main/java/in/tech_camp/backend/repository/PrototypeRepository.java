@@ -24,7 +24,8 @@ public interface PrototypeRepository {
   //「プロトタイプ情報」と「投稿者の名前」を同時に取得するためJOIN句を使用
   // <script>と<choose>タグを用い、SQLインジェクションを防ぎつつ動的にソート順を切り替える
   @Select("<script>" +
-            "SELECT prototypes.*, users.name AS user_name " +
+            "SELECT prototypes.*, users.name AS user_name, " + 
+            "(SELECT COUNT(*) FROM likes WHERE likes.prototype_id = prototypes.id) AS like_count " +
             "FROM prototypes " +
             "JOIN users ON prototypes.user_id = users.id " +
             "<choose>" +
@@ -47,7 +48,8 @@ public interface PrototypeRepository {
 
 
   // プロトタイプ詳細画面表示
-  @Select("SELECT p.*, u.id AS user_id, u.name AS user_name " +
+  @Select("SELECT p.*, u.id AS user_id, u.name AS user_name, " + 
+            "(SELECT COUNT(*) FROM likes WHERE likes.prototype_id = p.id) AS like_count " + 
             "FROM prototypes p " +
             "LEFT JOIN users u ON p.user_id = u.id " +
             "WHERE p.id = #{id}")
