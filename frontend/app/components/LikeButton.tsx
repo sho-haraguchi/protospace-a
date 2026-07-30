@@ -58,11 +58,18 @@ export default function LikeButton({ prototypeId }: LikeButtonProps) {
 
       router.refresh();
       
-    } catch (error) {
-      // ネットワークエラー等で失敗した場合のみ、こっそり状態を元に戻す (ロールバック)
+    } catch (error: any) { 
       setIsLiked(wasLiked);
       setLikeCount((prev) => (wasLiked ? prev + 1 : prev - 1));
-      console.error('いいねの操作に失敗しました', error);
+      
+      if (error.response && error.response.data) {
+        const errorData = error.response.data;
+        // エラーデータを文字列に変換してアラートで表示
+        alert("サーバーエラーの詳細: \n" + JSON.stringify(errorData, null, 2));
+        console.error("エラーデータの詳細:", errorData);
+      } else {
+        alert("リクエストに失敗しましたが、エラーデータは返されませんでした: " + error.message);
+      }
     }
   };
 
