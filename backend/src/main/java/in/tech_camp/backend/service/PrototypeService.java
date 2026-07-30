@@ -46,9 +46,12 @@ public class PrototypeService {
 
     /**
      * プロトタイプ一覧取得
+     * 
+     * @param sort ソート条件 ("created" または "updated")
+     * @return ソート済みのプロトタイプ一覧
      */
-    public List<PrototypeEntity> findAllPrototypes() {
-        return prototypeRepository.findAll();
+    public List<PrototypeEntity> findAllPrototypes(String sort) {
+        return prototypeRepository.findAll(sort);
     }
 
     /**
