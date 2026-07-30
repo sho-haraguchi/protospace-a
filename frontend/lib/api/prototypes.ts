@@ -62,8 +62,10 @@ export async function deletePrototype(id: number | string): Promise<void> {
  */
 export async function searchPrototypes(query: string): Promise<PrototypeData[]> {
   try {
-    const response = await apiClient.get<PrototypeData[]>('/prototypes/search', {
-      params: { query }, 
+    const baseUrl = getApiBaseUrl(); 
+    const response = await axios.get<PrototypeData[]>(`${baseUrl}/prototypes/search`, {
+      params: { query },
+      withCredentials: true,
     });
     return response.data;
   } catch (error) {
