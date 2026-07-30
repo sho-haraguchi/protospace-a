@@ -107,6 +107,7 @@ const PrototypeForm = ({
     } catch (error: unknown) {
       console.error('投稿エラー:', error);
 
+      // AxiosError かどうかの型ガードを追加して安全に参照する
       if (axios.isAxiosError(error)) {
         // 投稿セッションが切れていた場合のリダイレクト
         if (error.response?.status === 401) {
@@ -224,7 +225,7 @@ const PrototypeForm = ({
         <button 
           type="submit" 
           className={styles['submit-btn']}
-          disabled={isSubmitting || isAnyOver}
+          disabled={isSubmitting || isAnyOver} // 送信中はクリック不可
         >
           {isSubmitting ? '保存中...' : '保存する'}
         </button>
