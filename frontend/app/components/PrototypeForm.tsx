@@ -78,10 +78,9 @@ const PrototypeForm = ({
     // すでに送信中なら何もしない（連打ガード）
     if (isSubmitting) return;
 
-    // 2. 文字数制限ガード（上限オーバーなら中断）
     if (isAnyOver) return;
 
-    // 3. 送信開始：フラグを立ててボタンを無効化し、エラー表示をクリア
+    // 送信開始：フラグを立ててボタンを無効化
     setIsSubmitting(true);
     setInternalErrorMessages([]);
 
