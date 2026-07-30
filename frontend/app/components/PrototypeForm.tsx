@@ -75,7 +75,7 @@ const PrototypeForm = ({
   const isAnyOver = isNameOver || isSloganOver || isConceptOver;
 
   const handleFormSubmit = async (data: PrototypeData) => {
-    // 1. 二重送信ガード（すでに送信中なら中断）
+    // すでに送信中なら何もしない（連打ガード）
     if (isSubmitting) return;
 
     // 2. 文字数制限ガード（上限オーバーなら中断）
