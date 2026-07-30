@@ -73,7 +73,7 @@ const PrototypeForm = ({
   const isAnyOver = isNameOver || isSloganOver || isConceptOver;
 
   const handleFormSubmit = async (data: PrototypeData) => {
-    // 文字数オーバー時は送信させない
+
     if (isAnyOver) return;
 
     // 内部エラーメッセージのクリア
