@@ -10,4 +10,6 @@ export interface PrototypeData {
   // バックエンドから返却されるタイムスタンプを追加
   createdAt?: string; // 作成日時
   updatedAt?: string; // 更新日時
+  // いいね数
+  likeCount?: number;
 }
