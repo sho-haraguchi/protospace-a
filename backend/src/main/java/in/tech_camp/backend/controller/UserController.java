@@ -82,7 +82,7 @@ public class UserController {
         return createUser(userForm, bindingResult, null);
     }
 
-/**
+    /**
      * ログイン処理
      */
     @PostMapping("/login")
@@ -161,32 +161,32 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-  /**
-   * ユーザー詳細ページ表示（showMypage）
-   */
-  @GetMapping("/{id}")
-  //引数を Integer id から String id に変更（型キャストエラー防止）
-  public ResponseEntity<?> showMypage(@PathVariable String id) {
-      // try-catch を追加して "undefined" 等が渡された場合の例外ハンドリングを追加
-      try {
-          Integer userId = Integer.parseInt(id);
+    /**
+     * ユーザー詳細ページ表示（showMypage）
+     */
+    @GetMapping("/{id}")
+    // 引数を Integer id から String id に変更（型キャストエラー防止）
+    public ResponseEntity<?> showMypage(@PathVariable String id) {
+        // try-catch を追加して "undefined" 等が渡された場合の例外ハンドリングを追加
+        try {
+            Integer userId = Integer.parseInt(id);
 
-          // Serviceからユーザー情報とプロトタイプ一覧のMapを受け取る
-          Map<String, Object> response = userService.getUserDetail(userId);
+            // Serviceからユーザー情報とプロトタイプ一覧のMapを受け取る
+            Map<String, Object> response = userService.getUserDetail(userId);
 
-          // ユーザーが存在しない場合は 404 Not Found を返す
-          if (response == null) {
-              return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-          }
+            // ユーザーが存在しない場合は 404 Not Found を返す
+            if (response == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
 
-          // 取得できた場合は 200 OK とともにデータを返す
-          return ResponseEntity.ok(response);
-      } catch (NumberFormatException e) {
-          Map<String, String> error = new HashMap<>();
-          error.put("message", "無効なユーザーIDです。");
-          return ResponseEntity.badRequest().body(error);
-      }
-  }
+            // 取得できた場合は 200 OK とともにデータを返す
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "無効なユーザーIDです。");
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
 
     /**
      * Spring Security に認証完了を伝え、@AuthenticationPrincipal が利用できる状態にしてセッションに保持する
