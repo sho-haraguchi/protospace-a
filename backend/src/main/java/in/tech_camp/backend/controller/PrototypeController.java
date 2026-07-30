@@ -184,7 +184,7 @@ public class PrototypeController {
         return ResponseEntity.ok().body(Map.of("message", "削除が完了しました"));
     }
 
-    @GetMapping("/search")
+    @GetMapping("/prototypes/search")
     public ResponseEntity<List<PrototypeEntity>> searchPrototypes(@RequestParam("query") String query) {
         List<PrototypeEntity> prototypes = prototypeService.searchPrototypes(query);  
         return ResponseEntity.ok(prototypes);

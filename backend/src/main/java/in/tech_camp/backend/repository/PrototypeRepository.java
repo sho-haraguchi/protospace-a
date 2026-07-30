@@ -77,7 +77,7 @@ public interface PrototypeRepository {
   @Select("SELECT * FROM prototypes WHERE name LIKE CONCAT('%', #{query}, '%')")
   @Results({
       @Result(property = "user", column = "user_id", 
-              one = @One(select = "in.tech_camp.backend.repository.UserRepository.findByID"))
+              one = @One(select = "in.tech_camp.backend.repository.UserRepository.findById"))
   })
   List<PrototypeEntity> findByTextContaining(String query);
 }
