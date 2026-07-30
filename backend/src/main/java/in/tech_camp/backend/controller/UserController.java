@@ -226,8 +226,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
      }
-    }
-}
+　}
    /**
    * ログイン画面表示（showLogin）
    */
