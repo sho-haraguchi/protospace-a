@@ -62,7 +62,7 @@ export async function deletePrototype(id: number | string): Promise<void> {
  */
 export async function searchPrototypes(query: string): Promise<PrototypeData[]> {
   try {
-    const response = await apiClient.get<PrototypeData[]>('/search', {
+    const response = await apiClient.get<PrototypeData[]>('/prototypes/search', {
       params: { query }, 
     });
     return response.data;
