@@ -4,6 +4,7 @@ import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import in.tech_camp.backend.entity.UserEntity;
 
@@ -34,4 +35,10 @@ public interface UserRepository {
    */
   @Select("SELECT id, name, profile, affiliation, position FROM users WHERE id = #{id}")
   UserEntity findById(Integer id);
+
+  /**
+   * ユーザー情報を更新するSQL
+   */
+  @Update("UPDATE users SET name = #{name}, profile = #{profile}, affiliation = #{affiliation}, position = #{position}, password = #{password} WHERE id = #{id}")
+  void update(UserEntity userEntity);
 }

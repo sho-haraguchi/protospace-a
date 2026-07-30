@@ -108,6 +108,11 @@
   background-color: #6bbcf0;
 }
 
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* エラーメッセージ表示 */
 .error-text {
   color: #e53e3e;

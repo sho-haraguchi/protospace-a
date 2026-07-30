@@ -117,3 +117,34 @@
 .authorLink:hover {
   text-decoration: underline;
 }
+
+.headerGroup {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.editBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #8ecbf5; /* 統一したいメインカラー（例: 青） */
+  color: #ffffff;             /* テキスト色 */
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+/* ホバー時の挙動も他のボタンと統一 */
+.editBtn:hover {
+  background-color: #7abceb; /* 少し濃い色に変化 */
+}
+
+.editBtn:active {
+  transform: scale(0.98);
+}

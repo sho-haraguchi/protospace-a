@@ -112,12 +112,7 @@ class PrototypeControllerTest {
         editForm.setConcept("編集後のコンセプト");
         editForm.setImage(validImage);
 
-        // ⏬ テスト用のモックセッションとログインユーザーを作成
-        jakarta.servlet.http.HttpSession mockSession = org.mockito.Mockito.mock(jakarta.servlet.http.HttpSession.class);
-        in.tech_camp.backend.entity.UserEntity mockUserEntity = new in.tech_camp.backend.entity.UserEntity();
-        mockUserEntity.setId(1);
-
-        when(mockSession.getAttribute("user")).thenReturn(mockUserEntity);
+        when(mockUser.getId()).thenReturn(1);
 
         PrototypeEntity updatedEntity = new PrototypeEntity();
         updatedEntity.setId(prototypeId);
@@ -127,14 +122,15 @@ class PrototypeControllerTest {
         when(prototypeService.updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), eq(1)))
                 .thenReturn(updatedEntity);
 
-        // ⏬ 第3引数に mockSession を渡す
-        PrototypeEntity result = prototypeController.updatePrototype(prototypeId, editForm, mockSession);
+        // コントローラーの引数に mockUser を渡し、戻り値の型を ResponseEntity<?> に指定
+        ResponseEntity<?> response = prototypeController.updatePrototype(prototypeId, editForm, mockUser);
 
         // 検証
-        assertNotNull(result);
-        assertEquals("編集後のプロトタイプ名", result.getName());
-        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), any());
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(prototypeService, times(1)).updatePrototype(eq(prototypeId), any(PrototypeEditForm.class), eq(1));
     }
+    
   @Nested
     @DisplayName("2. プロトタイプ一覧取得機能")
     class GetAllPrototypes {
@@ -142,14 +138,14 @@ class PrototypeControllerTest {
         @Test
         @DisplayName("2-1. 正常系: 登録済みのプロトタイプ一覧が正常に取得できること")
         void getAllPrototypes_Success() {
-            when(prototypeService.findAllPrototypes()).thenReturn(List.of(mockPrototype));
+            when(prototypeService.findAllPrototypes(eq("created"))).thenReturn(List.of(mockPrototype));
 
-            List<PrototypeEntity> result = prototypeController.showPrototypes();
+            List<PrototypeEntity> result = prototypeController.showPrototypes("created");
 
             assertNotNull(result);
             assertEquals(1, result.size());
             assertEquals("テストプロトタイプ", result.get(0).getName());
-            verify(prototypeService, times(1)).findAllPrototypes();
+            verify(prototypeService, times(1)).findAllPrototypes(eq("created"));
         }
     }
 
@@ -215,5 +211,4 @@ class PrototypeControllerTest {
             assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         }
     }
-}
 }

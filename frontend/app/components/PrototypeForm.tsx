@@ -37,6 +37,8 @@ const PrototypeForm = ({
 }: PrototypeFormProps) => {
   const router = useRouter();
   const [internalErrorMessages, setInternalErrorMessages] = useState<string[]>([]);
+  // 二重送信防止（ダブルクリック対策）用のState
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 親（編集画面）からエラーメッセージが渡されていればそれを使い、なければ内部のエラーを使う
   const displayErrorMessages = (externalErrorMessages && externalErrorMessages.length > 0)
@@ -47,7 +49,7 @@ const PrototypeForm = ({
     register, 
     handleSubmit, 
     watch,
-    formState: { errors, isSubmitting } 
+    formState: { errors } 
   } = useForm<PrototypeData>({
     defaultValues: {
       name: initialData?.name || '',
@@ -73,10 +75,14 @@ const PrototypeForm = ({
   const isAnyOver = isNameOver || isSloganOver || isConceptOver;
 
   const handleFormSubmit = async (data: PrototypeData) => {
+    // 1. 二重送信ガード（すでに送信中なら中断）
+    if (isSubmitting) return;
 
+    // 2. 文字数制限ガード（上限オーバーなら中断）
     if (isAnyOver) return;
 
-    // 内部エラーメッセージのクリア
+    // 3. 送信開始：フラグを立ててボタンを無効化し、エラー表示をクリア
+    setIsSubmitting(true);
     setInternalErrorMessages([]);
 
     const formData = new FormData();
@@ -119,6 +125,9 @@ const PrototypeForm = ({
       } else {
         setInternalErrorMessages(['予期せぬエラーが発生しました。']);
       }
+    } finally {
+      // 処理完了（成功・失敗問わず）時に送信中フラグを解除
+      setIsSubmitting(false);
     }
   };
 

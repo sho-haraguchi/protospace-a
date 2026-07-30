@@ -22,15 +22,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import in.tech_camp.backend.custom_user.CustomUserDetail;
 import in.tech_camp.backend.entity.PrototypeEntity;
-import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.PrototypeEditForm;
 import in.tech_camp.backend.form.PrototypeForm;
 import in.tech_camp.backend.service.PrototypeService;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -123,8 +122,10 @@ public class PrototypeController {
      * GET: /api/prototypes
      */
     @GetMapping("/prototypes")
-    public List<PrototypeEntity> showPrototypes() {
-        return prototypeService.findAllPrototypes(); 
+    public List<PrototypeEntity> showPrototypes(
+            @RequestParam(name = "sort", required = false, defaultValue = "created") String sort) {
+        // パラメータが未指定の場合は defaultValue により自動的に "created" が設定される
+        return prototypeService.findAllPrototypes(sort);
     }
 
     /**
