@@ -40,7 +40,8 @@ public interface PrototypeRepository {
       @Result(property = "user.id", column = "user_id"),
       @Result(property = "user.name", column = "user_name"),
       @Result(property = "createdAt", column = "created_at"),
-      @Result(property = "updatedAt", column = "updated_at")
+      @Result(property = "updatedAt", column = "updated_at"),
+      @Result(property = "likeCount", column = "like_count")
     })
     List<PrototypeEntity> findAll(@Param("sort") String sort);
 
@@ -55,7 +56,8 @@ public interface PrototypeRepository {
       @Result(property = "user.name", column = "user_name"),
       @Result(property = "userId", column = "user_id") ,
       @Result(property = "createdAt", column = "created_at"),
-      @Result(property = "updatedAt", column = "updated_at")
+      @Result(property = "updatedAt", column = "updated_at"),
+      @Result(property = "likeCount", column = "like_count")
     })
     PrototypeEntity findById(Integer id);
 
