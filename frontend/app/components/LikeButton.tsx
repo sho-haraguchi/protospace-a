@@ -16,6 +16,7 @@ export default function LikeButton({ prototypeId }: LikeButtonProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // 初期ロード時、サーバーから最新のいいね状態を取得する
   useEffect(() => {
@@ -41,7 +42,10 @@ export default function LikeButton({ prototypeId }: LikeButtonProps) {
       router.push('/login');
       return;
     }
-    if (isLoading) return; // 状態がロードされる前のクリックを防ぐ
+    // ロード中または通信中ならクリックを無視して連打を防ぐ
+    if (isLoading || isSubmitting) return; 
+
+    setIsSubmitting(true); // 通信開始
 
     // サーバーの応答を待たず、即座にボタンの色と数値を変更する
     const wasLiked = isLiked;
@@ -63,13 +67,15 @@ export default function LikeButton({ prototypeId }: LikeButtonProps) {
       setIsLiked(wasLiked);
       setLikeCount((prev) => (wasLiked ? prev + 1 : prev - 1));
       console.error('いいねの操作に失敗しました', error);
+    } finally {
+      setIsSubmitting(false); // 成功しても失敗しても通信終了
     }
   };
 
   return (
     <button
       onClick={handleToggleLike}
-      disabled={isLoading}
+      disabled={isLoading || isSubmitting} // 通信中もボタンを無効化
       className={`flex items-center gap-1.5 px-4 py-2 rounded-full transition-all border shadow-sm ${
         isLiked 
           ? 'text-red-500 bg-red-50 border-red-200' 
