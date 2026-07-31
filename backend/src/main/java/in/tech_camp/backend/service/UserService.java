@@ -100,7 +100,7 @@ public class UserService {
      * ユーザー情報の更新処理
      */
     public UserEntity updateUser(Integer userId, UserForm userForm) {
-        UserEntity user = userRepository.findByID(userId);
+        UserEntity user = userRepository.findById(userId);
         if (user == null) {
             throw new IllegalArgumentException("ユーザーが存在しません。");
         }

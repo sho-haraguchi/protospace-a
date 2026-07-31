@@ -56,3 +56,20 @@ export async function updatePrototype(id: string, formData: FormData) {
 export async function deletePrototype(id: number | string): Promise<void> {
   await apiClient.post(`/prototypes/${id}/delete`);
 }
+
+/**
+ * プロトタイプ検索
+ */
+export async function searchPrototypes(query: string): Promise<PrototypeData[]> {
+  try {
+    const baseUrl = getApiBaseUrl(); 
+    const response = await axios.get<PrototypeData[]>(`${baseUrl}/prototypes/search`, {
+      params: { query },
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error('プロトタイプの検索に失敗しました:', error);
+    return []; 
+  }
+}
