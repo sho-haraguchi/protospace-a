@@ -13,6 +13,7 @@ const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 
 interface PrototypeFormProps {
   initialData?: {
+    id?: number;
     name?: string;
     slogan?: string;
     concept?: string;
@@ -21,6 +22,13 @@ interface PrototypeFormProps {
   onSubmit?: (formData: FormData) => Promise<void>;
   errorMessages?: string[];
 }
+
+// 各項目の文字数制限
+const LIMITS = {
+  NAME: 50,
+  SLOGAN: 100,
+  CONCEPT: 200,
+};
 
 const PrototypeForm = ({ 
   initialData, 
@@ -37,7 +45,12 @@ const PrototypeForm = ({
     ? externalErrorMessages
     : internalErrorMessages;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<PrototypeData>({
+  const { 
+    register, 
+    handleSubmit, 
+    watch,
+    formState: { errors } 
+  } = useForm<PrototypeData>({
     defaultValues: {
       name: initialData?.name || '',
       slogan: initialData?.slogan || '',
@@ -45,9 +58,27 @@ const PrototypeForm = ({
     }
   });
 
+  // 入力値を監視
+  const nameValue = watch('name') || '';
+  const sloganValue = watch('slogan') || '';
+  const conceptValue = watch('concept') || '';
+
+  // 残り文字数の計算
+  const nameRemaining = LIMITS.NAME - nameValue.length;
+  const sloganRemaining = LIMITS.SLOGAN - sloganValue.length;
+  const conceptRemaining = LIMITS.CONCEPT - conceptValue.length;
+
+  // 超過判定
+  const isNameOver = nameRemaining < 0;
+  const isSloganOver = sloganRemaining < 0;
+  const isConceptOver = conceptRemaining < 0;
+  const isAnyOver = isNameOver || isSloganOver || isConceptOver;
+
   const handleFormSubmit = async (data: PrototypeData) => {
     // すでに送信中なら何もしない（連打ガード）
     if (isSubmitting) return;
+
+    if (isAnyOver) return;
 
     // 送信開始：フラグを立ててボタンを無効化
     setIsSubmitting(true);
@@ -120,6 +151,11 @@ const PrototypeForm = ({
           {...register('name', { required: 'プロトタイプの名称を入力してください' })}
         />
         {errors.name && <p className={styles['error-text']}>{errors.name.message}</p>}
+        {isNameOver && (
+          <span className={styles['char-count-over']}>
+            {nameRemaining} （上限 {LIMITS.NAME} 文字）
+          </span>
+        )}
       </div>
 
       {/* キャッチコピー */}
@@ -131,6 +167,11 @@ const PrototypeForm = ({
           {...register('slogan', { required: 'キャッチコピーを入力してください' })}
         />
         {errors.slogan && <p className={styles['error-text']}>{errors.slogan.message}</p>}
+        {isSloganOver && (
+          <span className={styles['char-count-over']}>
+            {sloganRemaining} （上限 {LIMITS.SLOGAN} 文字）
+          </span>
+        )}
       </div>
 
       {/* コンセプト */}
@@ -142,6 +183,11 @@ const PrototypeForm = ({
           {...register('concept', { required: 'コンセプトを入力してください' })}
         />
         {errors.concept && <p className={styles['error-text']}>{errors.concept.message}</p>}
+        {isConceptOver && (
+          <span className={styles['char-count-over']}>
+            {conceptRemaining} （上限 {LIMITS.CONCEPT} 文字）
+          </span>
+        )}
       </div>
 
       {/* プロトタイプの画像 */}
@@ -179,7 +225,7 @@ const PrototypeForm = ({
         <button 
           type="submit" 
           className={styles['submit-btn']}
-          disabled={isSubmitting} // 送信中はクリック不可
+          disabled={isSubmitting || isAnyOver} // 送信中はクリック不可
         >
           {isSubmitting ? '保存中...' : '保存する'}
         </button>
