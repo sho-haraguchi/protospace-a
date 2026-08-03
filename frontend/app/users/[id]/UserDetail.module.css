@@ -148,3 +148,32 @@
 .editBtn:active {
   transform: scale(0.98);
 }
+
+.dangerSection {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.deleteBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ef4444; /* ベースの赤 */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.deleteBtn:hover {
+  background-color: #dc2626; /* ホバー時は少し濃い赤 */
+}
+
+.deleteBtn:active {
+  transform: scale(0.98);
+}
