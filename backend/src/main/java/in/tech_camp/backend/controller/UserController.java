@@ -83,7 +83,7 @@ public class UserController {
         return createUser(userForm, bindingResult, null);
     }
 
-/**
+    /**
      * ログイン処理
      */
     @PostMapping("/login")
@@ -104,11 +104,14 @@ public class UserController {
             // 1. UserServiceでDBとの認証チェックを行う
             UserEntity loggedInUser = userService.login(loginForm);
 
-            // 2. Spring Security 認証コンテキストの作成 & セッション保存を一括実行
-            setSpringSecurityContext(loggedInUser, session);
+            // session が null でない場合のみ処理を実行（NullPointerException防止）
+            if (session != null) {
+                // 2. Spring Security 認証コンテキストの作成 & セッション保存を一括実行
+                setSpringSecurityContext(loggedInUser, session);
 
-            // 3. アプリケーション独自のセッション保存
-            session.setAttribute("user", loggedInUser);
+                // 3. アプリケーション独自のセッション保存
+                session.setAttribute("user", loggedInUser);
+            }
 
             // パスワードをレスポンスに含めないためのクリア処理
             loggedInUser.setPassword(null);
@@ -129,6 +132,11 @@ public class UserController {
      */
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(HttpSession session) {
+        // session 自体が null の場合に即時 401 を返すガードを追加
+        if (session == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         UserEntity user = (UserEntity) session.getAttribute("user");
 
         if (user == null) {
@@ -154,26 +162,40 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-  /**
-   * ユーザー詳細ページ表示（showMypage）
-   */
-  @GetMapping("/{id}")
-  public ResponseEntity<Map<String, Object>> showMypage(@PathVariable Integer id) {
-      // Serviceからユーザー情報とプロトタイプ一覧のMapを受け取る
-      Map<String, Object> response = userService.getUserDetail(id);
+    /**
+     * ユーザー詳細ページ表示（showMypage）
+     */
+    @GetMapping("/{id}")
+    // 引数を Integer id から String id に変更（型キャストエラー防止）
+    public ResponseEntity<?> showMypage(@PathVariable String id) {
+        // try-catch を追加して "undefined" 等が渡された場合の例外ハンドリングを追加
+        try {
+            Integer userId = Integer.parseInt(id);
 
-      // ユーザーが存在しない場合は 404 Not Found を返す
-      if (response == null) {
-          return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-      }
+            // Serviceからユーザー情報とプロトタイプ一覧のMapを受け取る
+            Map<String, Object> response = userService.getUserDetail(userId);
 
-      // 取得できた場合は 200 OK とともにデータを返す
-      return ResponseEntity.ok(response);
-  }
+            // ユーザーが存在しない場合は 404 Not Found を返す
+            if (response == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            // 取得できた場合は 200 OK とともにデータを返す
+            return ResponseEntity.ok(response);
+        } catch (NumberFormatException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "無効なユーザーIDです。");
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+
     /**
      * Spring Security に認証完了を伝え、@AuthenticationPrincipal が利用できる状態にしてセッションに保持する
      */
     private void setSpringSecurityContext(UserEntity loggedInUser, HttpSession session) {
+        // 引数が null の場合に落ちないための安全ガードを追加
+        if (loggedInUser == null || session == null) return;
+
         // 1. CustomUserDetail の作成
         CustomUserDetail userDetails = new CustomUserDetail(loggedInUser);
         // 2. 認証トークンの作成
@@ -188,7 +210,7 @@ public class UserController {
         SecurityContextHolder.setContext(securityContext);
         // 4. セッションへ Context を明示的に紐付け
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
-        }
+    }
     
 
     /**
@@ -198,6 +220,13 @@ public class UserController {
     public ResponseEntity<?> updateUser(
             @RequestBody UserForm userEditForm,
             HttpSession session) {
+
+        // session が null の場合のガードチェックを追加
+        if (session == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "ログインが必要です。");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
 
         UserEntity sessionUser = (UserEntity) session.getAttribute("user");
         if (sessionUser == null) {

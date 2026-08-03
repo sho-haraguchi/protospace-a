@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import { getPrototypeDetail } from '@/lib/api/prototypes';
-import { getCurrentUserServer } from '@/lib/api/users';
+import { getCurrentUserServer } from '@/lib/api/users.server';
 import PrototypeEditForm from './PrototypeEditForm';
 import styles from '@/app/components/PrototypeForm.module.css';
 

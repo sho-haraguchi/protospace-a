@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { apiClient } from '@/lib/api/client';
+import { getMe, updateUser, UpdateUserParams } from '@/lib/api/users';
 import styles from '@/app/signup/signup.module.css';
 
 interface UserEditFormProps {
@@ -43,14 +43,14 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await apiClient.get('/users/me');
-        if (response.data) {
+        const data = await getMe();
+        if (data) {
           // 取得した値を placeholder 用の State にセット
           setPlaceholders({
-            name: response.data.name || '',
-            profile: response.data.profile || '',
-            affiliation: response.data.affiliation || '',
-            position: response.data.position || '',
+            name: data.name || '',
+            profile: data.profile || '',
+            affiliation: data.affiliation || '',
+            position: data.position || '',
           });
         }
       } catch (error) {
@@ -85,7 +85,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
     try {
       // ユーザーが入力しなかった項目（空文字）は元の値（placeholders）を維持
-      const payload: Record<string, any> = {
+      const payload: UpdateUserParams = {
         name: name !== '' ? name : placeholders.name,
         profile: profile !== '' ? profile : placeholders.profile,
         affiliation: affiliation !== '' ? affiliation : placeholders.affiliation,
@@ -96,7 +96,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
       if (newPassword) payload.newPassword = newPassword;
       if (newPasswordConfirmation) payload.newPasswordConfirmation = newPasswordConfirmation;
 
-      const response = await apiClient.put('/users', payload);
+      const response = await updateUser(payload);
 
       if (response.status === 200) {
         if (onSuccess) {

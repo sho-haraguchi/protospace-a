@@ -3,7 +3,7 @@ import PrototypeList from '@/app/components/PrototypeList';
 import SearchForm from '@/app/components/SearchForm';
 import SortTabs from '@/app/components/SortTabs';
 import { findAllPrototypes } from '@/lib/api/prototypes';
-import { getCurrentUserServer } from '@/lib/api/users';
+import { getCurrentUserServer } from '@/lib/api/users.server'; // ログインユーザーを取得する関数を追加
 
 // Next.js App Router の Server Component として定義
 export default async function Home({
