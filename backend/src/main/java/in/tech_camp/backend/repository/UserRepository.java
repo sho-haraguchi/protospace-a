@@ -1,5 +1,6 @@
 package in.tech_camp.backend.repository;
 
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -35,4 +36,10 @@ public interface UserRepository {
    */
   @Update("UPDATE users SET name = #{name}, profile = #{profile}, affiliation = #{affiliation}, position = #{position} WHERE id = #{id}")
   void update(UserEntity userEntity);
+
+  /**
+   * ユーザーを削除するSQL
+   */
+  @Delete("DELETE FROM users WHERE id = #{id}")
+  void deleteById(Integer id);
 }
