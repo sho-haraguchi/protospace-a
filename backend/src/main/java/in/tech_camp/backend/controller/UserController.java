@@ -12,6 +12,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -226,19 +227,42 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
      }
+
+    /**
+     * ユーザーアカウント削除（退会処理）
+     */
+    @DeleteMapping
+    public ResponseEntity<?> deleteUser(HttpSession session) {
+        if (session == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "ログインが必要です。");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+
+        UserEntity sessionUser = (UserEntity) session.getAttribute("user");
+        if (sessionUser == null) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "ログインが必要です。");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+        }
+
+        try {
+            // DBからユーザーを削除
+            userService.deleteUser(sessionUser.getId());
+
+            // セッションを破棄してログアウト状態にする
+            session.invalidate();
+            SecurityContextHolder.clearContext();
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "アカウントを削除しました。");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "アカウント削除に失敗しました。");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
     }
-   /**
-   * ログイン画面表示（showLogin）
-   */
-
-
-
-  /**
-   * ログイン失敗時、再度ログイン画面へ遷移させる処理（loginError）
-   */
-
-
-
-  /**
-   * ユーザー詳細ページ表示（showMypage）
-   */
+}
+   

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import axios from 'axios';
 import { UserData } from '@/app/interfaces/UserData';
+import { apiClient } from './client';
 
 export async function getCurrentUserServer(): Promise<UserData | null> {
   try {
@@ -20,3 +21,11 @@ export async function getCurrentUserServer(): Promise<UserData | null> {
     return null;
   }
 }
+
+  /**
+   * ユーザーアカウント削除API
+   */
+  export async function deleteUser() {
+    const response = await apiClient.delete<{ message: string }>('/users');
+    return response.data;
+  }

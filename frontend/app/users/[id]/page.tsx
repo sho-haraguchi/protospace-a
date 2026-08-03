@@ -4,6 +4,7 @@ import axios from "axios";
 import { apiClient } from "@/lib/api/client";
 import styles from "./UserDetail.module.css";
 import EditButton from "@/app/components/EditButton";
+import DeleteUserButton from "@/app/components/DeleteUserButton";
 
 type User = {
   id: number;
@@ -141,6 +142,9 @@ export default async function UserDetailPage({
           </div>
         )}
       </section>
+
+      <DeleteUserButton pageUserId={user.id} />
+
     </main>
   );
 }
