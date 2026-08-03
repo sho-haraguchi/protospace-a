@@ -7,6 +7,7 @@ import { getCurrentUserServer } from '@/lib/api/users.server';
 import CommentSection from '@/app/components/CommentSection';
 import DeleteButton from './DeleteButton';
 import LikeButton from '@/app/components/LikeButton';
+import BookmarkButton from '@/app/components/BookmarkButton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
@@ -50,9 +51,10 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
         </Link>
       </p>
 
-      {/* いいねボタン */}
-      <div className="flex justify-center mb-10">
+      {/* いいねボタンとブックマークボタン */}
+      <div className="flex justify-center items-center gap-6 mb-10">
         <LikeButton prototypeId={prototype.id} />
+        <BookmarkButton prototypeId={prototype.id} />
       </div>
 
       {/* 投稿者本人の場合のみ 編集・削除ボタンを表示 */}
