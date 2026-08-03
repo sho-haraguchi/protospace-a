@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.One;
 import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
@@ -24,9 +25,11 @@ public interface PrototypeRepository {
   //「プロトタイプ情報」と「投稿者の名前」を同時に取得するためJOIN句を使用
   // <script>と<choose>タグを用い、SQLインジェクションを防ぎつつ動的にソート順を切り替える
   @Select("<script>" +
-            "SELECT prototypes.*, users.name AS user_name " +
+            "SELECT prototypes.*, users.name AS user_name, COUNT(likes.prototype_id) AS like_count " + 
             "FROM prototypes " +
             "JOIN users ON prototypes.user_id = users.id " +
+            "LEFT JOIN likes ON prototypes.id = likes.prototype_id " + // likesテーブルをLEFT JOIN
+            "GROUP BY prototypes.id, users.id, users.name " + // GROUP BY で集計
             "<choose>" +
             "  <!-- 'updated' が指定された場合は更新日時の降順 -->" +
             "  <when test='sort == \"updated\"'>ORDER BY prototypes.updated_at DESC, prototypes.id DESC</when>" +
@@ -40,22 +43,26 @@ public interface PrototypeRepository {
       @Result(property = "user.id", column = "user_id"),
       @Result(property = "user.name", column = "user_name"),
       @Result(property = "createdAt", column = "created_at"),
-      @Result(property = "updatedAt", column = "updated_at")
+      @Result(property = "updatedAt", column = "updated_at"),
+      @Result(property = "likeCount", column = "like_count")
     })
     List<PrototypeEntity> findAll(@Param("sort") String sort);
 
 
   // プロトタイプ詳細画面表示
-  @Select("SELECT p.*, u.id AS user_id, u.name AS user_name " +
+  @Select("SELECT p.*, u.id AS user_id, u.name AS user_name, COUNT(l.prototype_id) AS like_count " +
             "FROM prototypes p " +
             "LEFT JOIN users u ON p.user_id = u.id " +
-            "WHERE p.id = #{id}")
+            "LEFT JOIN likes l ON p.id = l.prototype_id " +
+            "WHERE p.id = #{id} " +
+            "GROUP BY p.id, u.id, u.name") // GROUP BY を追加
     @Results({
       @Result(property = "user.id", column = "user_id"),
       @Result(property = "user.name", column = "user_name"),
       @Result(property = "userId", column = "user_id") ,
       @Result(property = "createdAt", column = "created_at"),
-      @Result(property = "updatedAt", column = "updated_at")
+      @Result(property = "updatedAt", column = "updated_at"),
+      @Result(property = "likeCount", column = "like_count")
     })
     PrototypeEntity findById(Integer id);
 
@@ -71,4 +78,12 @@ public interface PrototypeRepository {
 
   @Delete("DELETE FROM prototypes WHERE id = #{id}")
   void deleteById(Integer id);
+
+  // プロトタイプ検索機能
+  @Select("SELECT * FROM prototypes WHERE name LIKE CONCAT('%', #{query}, '%')")
+  @Results({
+      @Result(property = "user", column = "user_id", 
+              one = @One(select = "in.tech_camp.backend.repository.UserRepository.findById"))
+  })
+  List<PrototypeEntity> findByTextContaining(String query);
 }

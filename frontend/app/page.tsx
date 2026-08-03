@@ -1,11 +1,11 @@
 import Link from 'next/link';
-import SortTabs from '@/app/components/SortTabs';
 import PrototypeList from '@/app/components/PrototypeList';
+import SearchForm from '@/app/components/SearchForm';
+import SortTabs from '@/app/components/SortTabs';
 import { findAllPrototypes } from '@/lib/api/prototypes';
 import { getCurrentUserServer } from '@/lib/api/users.server'; // ログインユーザーを取得する関数を追加
 
-// async をつけて Server Component にする
-// Next.js App Router の Server Component は searchParams を Promise として受け取る
+// Next.js App Router の Server Component として定義
 export default async function Home({
   searchParams,
 }: {
@@ -14,17 +14,23 @@ export default async function Home({
   // パラメータを解決し、指定がない場合はデフォルトで 'created' とみなす
   const resolvedParams = await searchParams;
   const sort = resolvedParams.sort || 'created';
-  // useEffect や useState を使わず、サーバー側で直接データを取得する
+
+  // サーバー側で並行してデータを取得
   const [prototypes, currentUser] = await Promise.all([
     findAllPrototypes(sort).catch((error) => {
       console.error('プロトタイプの取得に失敗しました:', error);
       return [];
     }),
-    getCurrentUserServer(),
+    getCurrentUserServer().catch(() => null),
   ]);
 
   return (
     <div className="p-8 md:p-16">
+      {/* 検索フォーム */}
+      <div className="mb-8">
+        <SearchForm />
+      </div>
+
       {/* ログインしている場合のみ、マイページへのリンク付き挨拶を表示 */}
       {currentUser && (
         <div className="mb-8">

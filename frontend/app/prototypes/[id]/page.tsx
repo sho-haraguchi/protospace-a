@@ -6,6 +6,7 @@ import { getComments } from '@/lib/api/comments';
 import { getCurrentUserServer } from '@/lib/api/users.server';
 import CommentSection from '@/app/components/CommentSection';
 import DeleteButton from './DeleteButton';
+import LikeButton from '@/app/components/LikeButton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
@@ -48,6 +49,11 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
           by {prototype.user?.name || '名無し'}
         </Link>
       </p>
+
+      {/* いいねボタン */}
+      <div className="flex justify-center mb-10">
+        <LikeButton prototypeId={prototype.id} />
+      </div>
 
       {/* 投稿者本人の場合のみ 編集・削除ボタンを表示 */}
       {isOwner && (

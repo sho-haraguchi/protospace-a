@@ -124,4 +124,15 @@ public class PrototypeService {
         // 5. 本人の場合のみ削除を実行
         prototypeRepository.deleteById(id);
     }
+
+/**
+     * プロトタイプ検索処理
+     */
+    public List<PrototypeEntity> searchPrototypes(String query) {
+        // null や 空文字、スペースのみの場合は検索せずに空リストを返す
+        if (query == null || query.isBlank()) {
+            return List.of();
+        }
+        return prototypeRepository.findByTextContaining(query.trim());
+    }
 }

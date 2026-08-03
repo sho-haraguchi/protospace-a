@@ -17,4 +17,7 @@ public class PrototypeEntity {
 
   private LocalDateTime createdAt;
   private LocalDateTime updatedAt;
+
+  //いいねの総数
+    private Integer likeCount;
 }
