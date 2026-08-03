@@ -1,6 +1,8 @@
 package in.tech_camp.backend.repository;
 
 import in.tech_camp.backend.entity.CommentEntity;
+
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Options;
@@ -30,4 +32,10 @@ public interface CommentRepository {
                 ORDER BY c.id DESC
             """)
     List<CommentEntity> findByPrototypeId(Integer prototypeId);
+
+    /**
+     * ユーザーIDに紐づくコメントをすべて削除する
+     */
+    @Delete("DELETE FROM comments WHERE user_id = #{userId}")
+    void deleteByUserId(Integer userId);
 }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getUserDetail, UserDetailResponse } from "@/lib/api/users";
 import styles from "./UserDetail.module.css";
 import EditButton from "@/app/components/EditButton";
+import DeleteUserButton from "@/app/components/DeleteUserButton";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
@@ -99,6 +100,9 @@ export default async function UserDetailPage({
           </div>
         )}
       </section>
+
+      <DeleteUserButton pageUserId={user.id} />
+
     </main>
   );
 }

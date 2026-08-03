@@ -6,11 +6,13 @@ import java.util.Map;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import in.tech_camp.backend.entity.PrototypeEntity;
 import in.tech_camp.backend.entity.UserEntity;
 import in.tech_camp.backend.form.LoginForm;
 import in.tech_camp.backend.form.UserForm;
+import in.tech_camp.backend.repository.CommentRepository;
 import in.tech_camp.backend.repository.PrototypeRepository;
 import in.tech_camp.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class UserService {
     
     private final UserRepository userRepository;
     private final PrototypeRepository prototypeRepository;
+    private final CommentRepository commentRepository;
     private final PasswordEncoder passwordEncoder;
     
     /**
@@ -130,4 +133,13 @@ public class UserService {
         return user;
     }
 
+    /**
+     * ユーザー削除処理
+     */
+    @Transactional
+    public void deleteUser(Integer id) {
+        commentRepository.deleteByUserId(id);
+        prototypeRepository.deleteByUserId(id);
+        userRepository.deleteById(id);
+    }
 }

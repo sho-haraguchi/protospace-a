@@ -86,4 +86,10 @@ public interface PrototypeRepository {
               one = @One(select = "in.tech_camp.backend.repository.UserRepository.findById"))
   })
   List<PrototypeEntity> findByTextContaining(String query);
+
+  /**
+  * ユーザーIDに紐づくプロトタイプをすべて削除する
+  */
+  @Delete("DELETE FROM prototypes WHERE user_id = #{userId}")
+  void deleteByUserId(Integer userId);
 }

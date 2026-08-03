@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
 import { UserData } from '@/app/interfaces/UserData';
+import { apiClient } from './client';
 
 // ユーザー新規登録のパラメータ型
 export interface SignupParams {
@@ -102,3 +103,10 @@ export async function updateUser(params: UpdateUserParams) {
   const response = await apiClient.put('/users', params);
   return response;
 }
+  /**
+   * ユーザーアカウント削除API
+   */
+  export async function deleteUser() {
+    const response = await apiClient.delete<{ message: string }>('/users');
+    return response.data;
+  }
