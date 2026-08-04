@@ -11,6 +11,7 @@ export interface SignupParams {
   profile: string;
   affiliation: string;
   position: string;
+  image?: File | string;
 }
 
 // ログインリクエスト用のパラメータ型
@@ -46,13 +47,18 @@ export interface UpdateUserParams {
   currentPassword?: string;
   newPassword?: string;
   newPasswordConfirmation?: string;
+  image?: File | string;
 }
 
 /**
  * ユーザー新規登録処理
  */
-export async function signupUser(params: SignupParams) {
-  const response = await apiClient.post('/users', params);
+export async function signupUser(params: SignupParams | FormData) {
+  // FormData（画像あり）の場合は専用のヘッダーを指定する
+  const isFormData = params instanceof FormData;
+  const response = await apiClient.post('/users', params, {
+    headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+  });
   return response;
 }
 
@@ -98,14 +104,19 @@ export async function getMe(): Promise<UserData | null> {
 /**
  * ユーザー情報更新API関数
  */
-export async function updateUser(params: UpdateUserParams) {
-  const response = await apiClient.put('/users', params);
+export async function updateUser(params: UpdateUserParams | FormData) {
+  const response = await axios.post('http://localhost:8080/api/users/update', params, {
+    // ログイン情報（クッキーのセッション）をSpringに届けるために必須
+    withCredentials: true
+  });
+  
   return response;
 }
-  /**
-   * ユーザーアカウント削除API
-   */
-  export async function deleteUser() {
-    const response = await apiClient.delete<{ message: string }>('/users');
-    return response.data;
-  }
+
+/**
+ * ユーザーアカウント削除API
+ */
+export async function deleteUser() {
+  const response = await apiClient.delete<{ message: string }>('/users');
+  return response.data;
+}

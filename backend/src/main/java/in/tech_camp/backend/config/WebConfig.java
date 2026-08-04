@@ -23,14 +23,21 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // パターンB: カレントディレクトリ直下の uploads と public/uploads の両方を絶対パスで取得
-        Path uploadPath = Paths.get("uploads").toAbsolutePath().normalize();
-        Path publicUploadPath = Paths.get("public/uploads").toAbsolutePath().normalize();
+        Path currentDir = Paths.get("").toAbsolutePath();
+        Path uploadPath;
+        if (currentDir.endsWith("backend")) {
+            uploadPath = currentDir.resolve("uploads/prototypes").normalize();
+        } else {
+            uploadPath = currentDir.resolve("backend/uploads/prototypes").normalize();
+        }
 
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(
-                    uploadPath.toUri().toString(),
-                    publicUploadPath.toUri().toString()
-                );
+        String uploadUri = uploadPath.toUri().toString();
+        if (!uploadUri.endsWith("/")) {
+            uploadUri += "/";
+        }
+
+        // http://localhost:8080/uploads/prototypes/** でアクセスできるようにする
+        registry.addResourceHandler("/uploads/prototypes/**")
+                .addResourceLocations(uploadUri);
     }
 }
