@@ -5,9 +5,12 @@ import styles from "./UserDetail.module.css";
 import EditButton from "@/app/components/EditButton";
 import DeleteUserButton from "@/app/components/DeleteUserButton";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
+export const dynamic = 'force-dynamic';
 
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+  ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
+  : 'http://localhost:8080';
+const IMAGE_BASE_URL = `${BASE_URL}/uploads/prototypes`;
 export default async function UserDetailPage({
   params,
 }: {
@@ -32,7 +35,22 @@ export default async function UserDetailPage({
       {/* ユーザー情報セクション */}
       <section className={styles.section}>
        <div className={styles.headerGroup}>
+         <div className={styles.headerProfile}>
+            <div className={styles.avatarWrapper}>
+              <img
+                src={
+                  !user.image
+                    ? "https://placehold.co/400x400?text=No+Image"
+                    : user.image.startsWith("http")
+                    ? user.image
+                    : `${IMAGE_BASE_URL}/${user.image}`
+                }
+                alt={`${user.name}のアバター`}
+                className={styles.avatarImage}
+              />
+            </div>
         <h2 className={styles.heading}>{user.name}さんの情報</h2>
+        </div>
          <EditButton pageUserId={user.id} />
        </div>
 

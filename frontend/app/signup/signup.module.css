@@ -100,3 +100,33 @@
   color: #d32f2f;
   font-weight: bold;
 }
+
+/* --- プロフィール画像・その他装飾用スタイル --- */
+.previewWrapper {
+  margin-bottom: 10px;
+}
+
+.previewImage {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #ccc;
+}
+
+.fileInput {
+  display: block;
+  margin-top: 8px;
+}
+
+.separator {
+  margin: 20px 0;
+  border: none;
+  border-top: 1px solid #eee;
+}
+
+.noticeText {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}

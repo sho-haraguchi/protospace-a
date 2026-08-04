@@ -10,7 +10,7 @@ import LikeButton from '@/app/components/LikeButton';
 import BookmarkButton from '@/app/components/BookmarkButton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
+const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'http://localhost:8080/uploads/prototypes';
 
 interface PageProps {
   params: Promise<{ id: string }>;
