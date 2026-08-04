@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { apiClient } from '@/lib/api/client';
 import { UserData } from '@/app/interfaces/UserData';
-import { apiClient } from './client';
 
 // ユーザー新規登録のパラメータ型
 export interface SignupParams {
