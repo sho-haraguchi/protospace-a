@@ -15,7 +15,7 @@ public interface UserRepository {
   /**
    * ユーザー新規登録SQL
    */
-  @Insert("INSERT INTO users (name, email, password, profile, affiliation, position) VALUES (#{name}, #{email}, #{password}, #{profile}, #{affiliation}, #{position})")
+  @Insert("INSERT INTO users (name, email, password, profile, affiliation, position, image) VALUES (#{name}, #{email}, #{password}, #{profile}, #{affiliation}, #{position}, #{image})")
   @Options(useGeneratedKeys = true, keyProperty = "id")
   void insert(UserEntity userEntity);
 
@@ -34,7 +34,9 @@ public interface UserRepository {
   /**
    * ユーザー情報を更新するSQL
    */
-  @Update("UPDATE users SET name = #{name}, profile = #{profile}, affiliation = #{affiliation}, position = #{position} WHERE id = #{id}")
+  @Update("UPDATE users SET name=#{name}, email=#{email}, profile=#{profile}, " +
+        "affiliation=#{affiliation}, position=#{position}, image=#{image}, " +
+        "password=#{password} WHERE id=#{id}")
   void update(UserEntity userEntity);
 
   /**
