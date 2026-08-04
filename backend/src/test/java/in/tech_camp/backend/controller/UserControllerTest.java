@@ -136,7 +136,7 @@ class UserControllerTest {
         when(userService.getUserDetail(userId)).thenReturn(mockResponse);
 
         // 2. 実行 (When)
-        ResponseEntity<Map<String, Object>> response = userController.showMypage(userId);
+        ResponseEntity<?> response = userController.showMypage(String.valueOf(userId));
 
         // 3. 検証 (Then)
         assertNotNull(response); // レスポンスがnullでないこと
@@ -157,7 +157,7 @@ class UserControllerTest {
         when(userService.getUserDetail(userId)).thenReturn(null);
 
         // 2. 実行 (When)
-        ResponseEntity<Map<String, Object>> response = userController.showMypage(userId);
+        ResponseEntity<?> response = userController.showMypage(String.valueOf(userId));
 
         // 3. 検証 (Then)
         assertNotNull(response);
