@@ -125,7 +125,7 @@ public class PrototypeService {
         prototypeRepository.deleteById(id);
     }
 
-/**
+    /**
      * プロトタイプ検索処理
      */
     public List<PrototypeEntity> searchPrototypes(String query) {
@@ -133,6 +133,21 @@ public class PrototypeService {
         if (query == null || query.isBlank()) {
             return List.of();
         }
-        return prototypeRepository.findByTextContaining(query.trim());
+        // 1. 前後の空白を除去
+        String trimmedQuery = query.trim();
+        // 2. LIKE 検索の特殊文字エスケープ処理
+        String escapedQuery = escapeLikeQuery(trimmedQuery);
+        return prototypeRepository.findByTextContaining(escapedQuery);
+    }
+
+    /**
+     * LIKE検索用の特殊文字 (%, _, \) をエスケープするメソッド
+     */
+    private String escapeLikeQuery(String input) {
+        if (input == null) return "";
+        return input
+            .replace("\\", "\\\\") 
+            .replace("%", "\\%")  
+            .replace("_", "\\_");  
     }
 }
