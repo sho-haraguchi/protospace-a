@@ -10,7 +10,7 @@ import LikeButton from '@/app/components/LikeButton';
 import BookmarkButton from '@/app/components/BookmarkButton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-const IMAGE_BASE_URL = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || 'http://localhost:8080/uploads/prototypes';
+const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -70,7 +70,7 @@ export default async function PrototypeDetailPage({ params }: PageProps) {
       {/* 画像 */}
       <div className={styles.imageWrapper}>
         <img
-          src={imageUrl}
+          src={imageUrl}          
           alt={prototype.name}
           className={styles.image}
         />
