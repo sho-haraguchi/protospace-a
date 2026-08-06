@@ -5,7 +5,9 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  // ブラウザ側・サーバー側問わず、直接バックエンド(8080)を向くように統一
+  if (typeof window !== 'undefined') {
+    config.baseURL = '/api';
+  } else {
   const rawUrl =
     process.env.INTERNAL_API_BASE_URL ||
     process.env.NEXT_PUBLIC_API_BASE_URL ||
@@ -13,6 +15,7 @@ apiClient.interceptors.request.use((config) => {
 
   const baseUrl = rawUrl.replace(/\/$/, '');
   config.baseURL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+  }
   
   return config;
 });

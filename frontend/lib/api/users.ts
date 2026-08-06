@@ -105,10 +105,7 @@ export async function getMe(): Promise<UserData | null> {
  * ユーザー情報更新API関数
  */
 export async function updateUser(params: UpdateUserParams | FormData) {
-  const response = await axios.post('http://localhost:8080/api/users/update', params, {
-    // ログイン情報（クッキーのセッション）をSpringに届けるために必須
-    withCredentials: true
-  });
+  const response = await apiClient.post('/users/update', params);
   
   return response;
 }
