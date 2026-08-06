@@ -12,10 +12,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
   : 'http://localhost:8080';
 const IMAGE_BASE_URL = `${BASE_URL}/uploads/prototypes`;
 
-// 画像URLの整形（未設定・localhost時はダミー画像を表示）
-function resolveImageUrl(imagePath: string | null | undefined, fallbackUrl: string): string {
+// アバター用URL整形
+function resolveAvatarUrl(imagePath: string | null | undefined): string {
   if (!imagePath || imagePath.includes("localhost")) {
-    return fallbackUrl;
+    return "https://placehold.co/400x400?text=No+Image";
   }
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     return imagePath;
@@ -43,7 +43,7 @@ export default async function UserDetailPage({
 
   const { user, prototypes } = data;
 
-  const avatarUrl = resolveImageUrl(user.image, "https://placehold.co/400x400?text=No+Image");
+  const avatarUrl = resolveAvatarUrl(user.image);
 
   return (
     <main className={styles.container}>
@@ -93,38 +93,37 @@ export default async function UserDetailPage({
           <p className={styles.emptyText}>まだプロトタイプを投稿していません。</p>
         ) : (
           <div className={styles.grid}>
-            {prototypes.map((prototype) => {
-              const prototypeImageUrl = resolveImageUrl(
-                prototype.image,
-                "https://placehold.co/600x400?text=No+Image"
-              );
-
-              return (
-                <div key={prototype.id} className={styles.card}>
-                  <Link href={`/prototypes/${prototype.id}`}>
-                    <div className={styles.imageWrapper}>
-                      <img
-                        src={prototypeImageUrl}
-                        alt={prototype.name}
-                        className={styles.image}
-                      />
-                    </div>
-                  </Link>
-
-                  <h3 className={styles.cardTitle}>{prototype.name}</h3>
-                  <p className={styles.cardSlogan}>{prototype.slogan}</p>
-
-                  <div className={styles.authorWrapper}>
-                    <Link
-                      href={`/users/${user.id}`}
-                      className={styles.authorLink}
-                    >
-                      by {user.name}
-                    </Link>
+            {prototypes.map((prototype) => (
+              <div key={prototype.id} className={styles.card}>
+                <Link href={`/prototypes/${prototype.id}`}>
+                  <div className={styles.imageWrapper}>
+                    <img
+                      src={
+                        !prototype.image
+                          ? "https://placehold.co/600x400?text=No+Image"
+                          : prototype.image.startsWith("http")
+                          ? prototype.image
+                          : `${IMAGE_BASE_URL}/${prototype.image}`
+                      }
+                      alt={prototype.name}
+                      className={styles.image}
+                    />
                   </div>
+                </Link>
+
+                <h3 className={styles.cardTitle}>{prototype.name}</h3>
+                <p className={styles.cardSlogan}>{prototype.slogan}</p>
+
+                <div className={styles.authorWrapper}>
+                  <Link
+                    href={`/users/${user.id}`}
+                    className={styles.authorLink}
+                  >
+                    by {user.name}
+                  </Link>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </section>
