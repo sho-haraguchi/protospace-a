@@ -8,8 +8,10 @@ import { apiClient } from '@/lib/api/client';
 import { PrototypeData } from '@/app/interfaces/PrototypeData';
 import styles from './PrototypeForm.module.css'; 
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+  ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
+  : 'http://localhost:8080';
+const IMAGE_BASE_URL = `${BASE_URL}/uploads/prototypes`;
 
 interface PrototypeFormProps {
   initialData?: {
