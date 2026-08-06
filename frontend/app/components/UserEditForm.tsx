@@ -8,7 +8,6 @@ interface UserEditFormProps {
   onSuccess?: () => void;
 }
 
-// プレースホルダー用に元のユーザー情報を保持する型
 interface UserPlaceholder {
   name: string;
   profile: string;
@@ -16,8 +15,22 @@ interface UserPlaceholder {
   position: string;
 }
 
+// アバター用URL整形（未設定・localhost時はダミー画像を表示）
+function resolveAvatarUrl(imagePath: string | null | undefined): string {
+  if (!imagePath || imagePath.includes("localhost")) {
+    return "https://placehold.co/400x400?text=No+Image";
+  }
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+    ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
+    : 'http://localhost:8080';
+  const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+  return `${BASE_URL}/uploads/prototypes/${cleanPath}`;
+}
+
 export default function UserEditForm({ onSuccess }: UserEditFormProps) {
-  // 入力フォームの各項目の値を保持するためのState（初期値は空文字）
   const [name, setName] = useState('');
   const [profile, setProfile] = useState('');
   const [affiliation, setAffiliation] = useState('');
@@ -27,7 +40,6 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
   const [userId, setUserId] = useState<number | string | null>(null);
 
-  // もともとの値を半透明表示（placeholder）するために保持するState
   const [placeholders, setPlaceholders] = useState<UserPlaceholder>({
     name: '',
     profile: '',
@@ -35,24 +47,19 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     position: '',
   });
 
-  // パスワード変更用
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPasswordConfirmation, setNewPasswordConfirmation] = useState('');
 
-  // 画面に表示する成功・エラーメッセージを保持するState
   const [message, setMessage] = useState('');
 
-  // 画面初期表示時に現在のユーザー情報を取得
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const data = await getMe();
         if (data) {
-
           setUserId(data.id);
 
-          // 取得した値を placeholder 用の State にセット
           setPlaceholders({
             name: data.name || '',
             profile: data.profile || '',
@@ -60,13 +67,8 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
             position: data.position || '',
           });
 
-          if (data.image) {
-            const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
-              ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
-              : 'http://localhost:8080';
-            const imageUrl = data.image.startsWith('http') ? data.image : `${BASE_URL}/uploads/prototypes/${data.image}`;
-            setPreviewUrl(imageUrl);
-          }
+          // アバター画像のURLを設定（未設定やlocalhost時は No Image になる）
+          setPreviewUrl(resolveAvatarUrl(data.image));
         }
       } catch (error) {
         console.error(error);
@@ -77,12 +79,10 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     fetchUserData();
   }, []);
 
-  // ▼追加: 画像が選択されたときの処理
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       setImageFile(file);
-      // プレビュー表示用にURLを生成
       setPreviewUrl(URL.createObjectURL(file));
     } else {
       setImageFile(null);
@@ -90,12 +90,10 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     }
   };
 
-  // フォーム送信時の処理（更新処理）
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage('');
 
-    // 新しいパスワードが入力されている場合のバリデーション
     if (newPassword || newPasswordConfirmation) {
       if (!currentPassword) {
         setMessage('❌ パスワードを変更するには「現在のパスワード」を入力してください。');
@@ -114,7 +112,6 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     try {
       const formData = new FormData();
 
-      // ユーザーが入力しなかった項目（空文字）は元の値（placeholders）を維持
       formData.append('name', name !== '' ? name : placeholders.name);
       formData.append('profile', profile !== '' ? profile : placeholders.profile);
       formData.append('affiliation', affiliation !== '' ? affiliation : placeholders.affiliation);
@@ -145,7 +142,6 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
       const data = error.response?.data;
 
-      // バックエンドから返ってきたエラーの形式に合わせてメッセージを抽出
       if (typeof data === 'string') {
         setMessage(`❌ ${data}`);
       } else if (data?.message) {
@@ -165,15 +161,13 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
       <div className={styles.inputGroup}>
         <label className={styles.label}>プロフィール画像</label>
-        {previewUrl && (
-          <div className={styles.previewWrapper}>
-            <img 
-              src={previewUrl} 
-              alt="プレビュー" 
-              className={styles.previewImage}
-            />
-          </div>
-        )}
+        <div className={styles.previewWrapper}>
+          <img 
+            src={previewUrl || "https://placehold.co/400x400?text=No+Image"} 
+            alt="プレビュー" 
+            className={styles.previewImage}
+          />
+        </div>
         <input 
           type="file" 
           accept="image/*" 
