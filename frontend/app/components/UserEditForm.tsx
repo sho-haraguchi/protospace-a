@@ -16,6 +16,28 @@ interface UserPlaceholder {
   position: string;
 }
 
+// アバター用URL整形
+function resolveAvatarUrl(imagePath: string | null | undefined): string {
+  if (
+    !imagePath ||
+    imagePath.includes("localhost") ||
+    imagePath.endsWith("/") ||
+    imagePath.trim() === ""
+  ) {
+    return "https://placehold.co/400x400?text=No+Image";
+  }
+
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+
+  const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+    ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
+    : 'http://localhost:8080';
+  const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+  return `${BASE_URL}/uploads/prototypes/${cleanPath}`;
+}
+
 export default function UserEditForm({ onSuccess }: UserEditFormProps) {
   // 入力フォームの各項目の値を保持するためのState（初期値は空文字）
   const [name, setName] = useState('');
@@ -60,13 +82,8 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
             position: data.position || '',
           });
 
-          if (data.image) {
-            const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
-              ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
-              : 'http://localhost:8080';
-            const imageUrl = data.image.startsWith('http') ? data.image : `${BASE_URL}/uploads/prototypes/${data.image}`;
-            setPreviewUrl(imageUrl);
-          }
+          // アバター画像のURLを設定
+          setPreviewUrl(resolveAvatarUrl(data.image));
         }
       } catch (error) {
         console.error(error);
@@ -77,7 +94,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     fetchUserData();
   }, []);
 
-  // ▼追加: 画像が選択されたときの処理
+  // 画像が選択されたときの処理
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -86,7 +103,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
       setPreviewUrl(URL.createObjectURL(file));
     } else {
       setImageFile(null);
-      setPreviewUrl(null);
+      setPreviewUrl("https://placehold.co/400x400?text=No+Image");
     }
   };
 
@@ -165,10 +182,11 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
       <div className={styles.inputGroup}>
         <label className={styles.label}>プロフィール画像</label>
+
         {previewUrl && (
           <div className={styles.previewWrapper}>
             <img 
-              src={previewUrl} 
+              src={previewUrl || "https://placehold.co/400x400?text=No+Image"} 
               alt="プレビュー" 
               className={styles.previewImage}
             />

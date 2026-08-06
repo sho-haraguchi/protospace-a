@@ -11,6 +11,19 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
   ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
   : 'http://localhost:8080';
 const IMAGE_BASE_URL = `${BASE_URL}/uploads/prototypes`;
+
+// アバター用URL整形
+function resolveAvatarUrl(imagePath: string | null | undefined): string {
+  if (!imagePath || imagePath.includes("localhost")) {
+    return "https://placehold.co/400x400?text=No+Image";
+  }
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+  const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+  return `${IMAGE_BASE_URL}/${cleanPath}`;
+}
+
 export default async function UserDetailPage({
   params,
 }: {
@@ -30,29 +43,25 @@ export default async function UserDetailPage({
 
   const { user, prototypes } = data;
 
+  const avatarUrl = resolveAvatarUrl(user.image);
+
   return (
     <main className={styles.container}>
-      {/* ユーザー情報セクション */}
+      {/* ユーザー情報 */}
       <section className={styles.section}>
-       <div className={styles.headerGroup}>
-         <div className={styles.headerProfile}>
+        <div className={styles.headerGroup}>
+          <div className={styles.headerProfile}>
             <div className={styles.avatarWrapper}>
               <img
-                src={
-                  !user.image
-                    ? "https://placehold.co/400x400?text=No+Image"
-                    : user.image.startsWith("http")
-                    ? user.image
-                    : `${IMAGE_BASE_URL}/${user.image}`
-                }
+                src={avatarUrl}
                 alt={`${user.name}のアバター`}
                 className={styles.avatarImage}
               />
             </div>
-        <h2 className={styles.heading}>{user.name}さんの情報</h2>
+            <h2 className={styles.heading}>{user.name}さんの情報</h2>
+          </div>
+          <EditButton pageUserId={user.id} />
         </div>
-         <EditButton pageUserId={user.id} />
-       </div>
 
         <table className={styles.table}>
           <tbody>
@@ -76,7 +85,7 @@ export default async function UserDetailPage({
         </table>
       </section>
 
-      {/* プロトタイプ一覧セクション */}
+      {/* プロトタイプ一覧 */}
       <section>
         <h2 className={styles.heading}>{user.name}さんのプロトタイプ</h2>
 
@@ -120,7 +129,6 @@ export default async function UserDetailPage({
       </section>
 
       <DeleteUserButton pageUserId={user.id} />
-
     </main>
   );
 }
