@@ -16,14 +16,21 @@ interface UserPlaceholder {
   position: string;
 }
 
-// アバター用URL整形（未設定・localhost時はダミー画像を表示）
+// アバター用URL整形
 function resolveAvatarUrl(imagePath: string | null | undefined): string {
-  if (!imagePath || imagePath.includes("localhost")) {
+  if (
+    !imagePath ||
+    imagePath.includes("localhost") ||
+    imagePath.endsWith("/") ||
+    imagePath.trim() === ""
+  ) {
     return "https://placehold.co/400x400?text=No+Image";
   }
+
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
     return imagePath;
   }
+
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
     ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
     : 'http://localhost:8080';
@@ -75,7 +82,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
             position: data.position || '',
           });
 
-          // アバター画像のURLを設定（未設定やlocalhost時は No Image になる）
+          // アバター画像のURLを設定
           setPreviewUrl(resolveAvatarUrl(data.image));
         }
       } catch (error) {
@@ -87,7 +94,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     fetchUserData();
   }, []);
 
-  // ▼追加: 画像が選択されたときの処理
+  // 画像が選択されたときの処理
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
@@ -96,7 +103,7 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
       setPreviewUrl(URL.createObjectURL(file));
     } else {
       setImageFile(null);
-      setPreviewUrl(null);
+      setPreviewUrl("https://placehold.co/400x400?text=No+Image");
     }
   };
 
