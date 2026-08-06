@@ -177,3 +177,26 @@
 .deleteBtn:active {
   transform: scale(0.98);
 }
+
+/* --- アバター（プロフィール画像）用スタイル --- */
+.headerProfile {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; /* 画像と名前の間の余白 */
+}
+
+.avatarWrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  flex-shrink: 0;
+  border: 2px solid #e5e7eb;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

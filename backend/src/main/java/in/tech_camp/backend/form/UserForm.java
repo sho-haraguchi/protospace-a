@@ -1,5 +1,7 @@
 package in.tech_camp.backend.form;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -34,4 +36,5 @@ public class UserForm {
     private String currentPassword;
     private String newPassword;
     private String newPasswordConfirmation;
+    private MultipartFile image;
 }

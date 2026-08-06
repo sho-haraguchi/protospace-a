@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api/client'
+import { deleteUser } from '@/lib/api/users';
 import styles from '../users/[id]/UserDetail.module.css';
 
 type Props = {
@@ -37,12 +38,11 @@ export default function DeleteUserButton({ pageUserId }: Props) {
     }
 
     try {
-      await apiClient.delete('/users');
+      await deleteUser();
 
       alert('アカウントを削除しました。')
 
-      router.push('/');
-      router.refresh();
+      window.location.href = '/';
 
     } catch (error) {
       console.error('削除エラー:', error);

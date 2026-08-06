@@ -14,9 +14,9 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -43,7 +43,7 @@ public class UserController {
      */
     @PostMapping
     public ResponseEntity<?> createUser(
-            @Validated @RequestBody UserForm userForm, 
+            @Validated @ModelAttribute UserForm userForm, 
             BindingResult bindingResult,
             HttpSession session) {
 
@@ -216,9 +216,10 @@ public class UserController {
     /**
      * ユーザー情報更新処理（updateUser）
      */
-    @PutMapping
+    @PostMapping("/update") 
     public ResponseEntity<?> updateUser(
-            @RequestBody UserForm userEditForm,
+            // 変更点2: @RequestBody ではなく @ModelAttribute を使う！
+            @ModelAttribute UserForm userEditForm,
             HttpSession session) {
 
         // session が null の場合のガードチェックを追加

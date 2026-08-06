@@ -22,6 +22,10 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
   const [profile, setProfile] = useState('');
   const [affiliation, setAffiliation] = useState('');
   const [position, setPosition] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const [userId, setUserId] = useState<number | string | null>(null);
 
   // もともとの値を半透明表示（placeholder）するために保持するState
   const [placeholders, setPlaceholders] = useState<UserPlaceholder>({
@@ -45,6 +49,9 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
       try {
         const data = await getMe();
         if (data) {
+
+          setUserId(data.id);
+
           // 取得した値を placeholder 用の State にセット
           setPlaceholders({
             name: data.name || '',
@@ -52,6 +59,14 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
             affiliation: data.affiliation || '',
             position: data.position || '',
           });
+
+          if (data.image) {
+            const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+              ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
+              : 'http://localhost:8080';
+            const imageUrl = data.image.startsWith('http') ? data.image : `${BASE_URL}/uploads/prototypes/${data.image}`;
+            setPreviewUrl(imageUrl);
+          }
         }
       } catch (error) {
         console.error(error);
@@ -61,6 +76,19 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
     fetchUserData();
   }, []);
+
+  // ▼追加: 画像が選択されたときの処理
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      // プレビュー表示用にURLを生成
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setImageFile(null);
+      setPreviewUrl(null);
+    }
+  };
 
   // フォーム送信時の処理（更新処理）
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,25 +112,31 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
     }
 
     try {
+      const formData = new FormData();
+
       // ユーザーが入力しなかった項目（空文字）は元の値（placeholders）を維持
-      const payload: UpdateUserParams = {
-        name: name !== '' ? name : placeholders.name,
-        profile: profile !== '' ? profile : placeholders.profile,
-        affiliation: affiliation !== '' ? affiliation : placeholders.affiliation,
-        position: position !== '' ? position : placeholders.position,
-      };
+      formData.append('name', name !== '' ? name : placeholders.name);
+      formData.append('profile', profile !== '' ? profile : placeholders.profile);
+      formData.append('affiliation', affiliation !== '' ? affiliation : placeholders.affiliation);
+      formData.append('position', position !== '' ? position : placeholders.position);
 
-      if (currentPassword) payload.currentPassword = currentPassword;
-      if (newPassword) payload.newPassword = newPassword;
-      if (newPasswordConfirmation) payload.newPasswordConfirmation = newPasswordConfirmation;
+      if (currentPassword) formData.append('currentPassword', currentPassword);
+      if (newPassword) formData.append('newPassword', newPassword);
+      if (newPasswordConfirmation) formData.append('newPasswordConfirmation', newPasswordConfirmation);
 
-      const response = await updateUser(payload);
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      const response = await updateUser(formData);
 
       if (response.status === 200) {
         if (onSuccess) {
           onSuccess();
+        } else if (userId){
+          window.location.href = `/users/${userId}`;
         } else {
-          window.location.href = '/';
+          window.location.href = `/`;
         }
       }
 
@@ -128,6 +162,25 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       {message && <p className={styles.errorMessage}>{message}</p>}
+
+      <div className={styles.inputGroup}>
+        <label className={styles.label}>プロフィール画像</label>
+        {previewUrl && (
+          <div className={styles.previewWrapper}>
+            <img 
+              src={previewUrl} 
+              alt="プレビュー" 
+              className={styles.previewImage}
+            />
+          </div>
+        )}
+        <input 
+          type="file" 
+          accept="image/*" 
+          onChange={handleImageChange} 
+          className={styles.fileInput}
+        />
+      </div>
 
       <div className={styles.inputGroup}>
         <label className={styles.label}>ユーザー名</label>
@@ -171,8 +224,8 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
         />
       </div>
 
-      <hr style={{ margin: '20px 0', borderColor: '#eee' }} />
-      <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+      <hr className={styles.separator} />
+      <p className={styles.noticeText}>
         ※パスワードを変更する場合は以下を入力してください（変更しない場合は空欄のままで構いません）。
       </p>
 

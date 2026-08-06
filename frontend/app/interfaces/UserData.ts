@@ -5,4 +5,5 @@ export interface UserData {
   profile?: string;
   affiliation?: string;
   position?: string;
+  image?: string;
 }
