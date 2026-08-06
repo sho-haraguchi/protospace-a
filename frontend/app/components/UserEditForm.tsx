@@ -174,11 +174,17 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
             />
           </div>
         )}
+        
+        <label htmlFor="profile-upload" className={styles.fileInputBtn}>
+          画像を選択する
+        </label>
+
         <input 
+          id="profile-upload"
           type="file" 
           accept="image/*" 
           onChange={handleImageChange} 
-          className={styles.fileInput}
+          style={{ display: 'none' }} 
         />
       </div>
 

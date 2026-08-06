@@ -130,3 +130,23 @@
   color: #666;
   margin-bottom: 10px;
 }
+
+.fileInputBtn {
+  width: 230px !important;
+  height: 32px !important;
+  background-color: #8ecbf5 !important;
+  color: #ffffff !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  border: none !important;
+  border-radius: 2px !important;
+  cursor: pointer !important;
+  margin-top: 8px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.fileInputBtn:hover {
+  background-color: #7abceb !important;
+}
