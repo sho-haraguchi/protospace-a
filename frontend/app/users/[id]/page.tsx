@@ -11,6 +11,19 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL
   ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
   : 'http://localhost:8080';
 const IMAGE_BASE_URL = `${BASE_URL}/uploads/prototypes`;
+
+// 画像URLの整形（未設定・localhost時はダミー画像を表示）
+function resolveImageUrl(imagePath: string | null | undefined, fallbackUrl: string): string {
+  if (!imagePath || imagePath.includes("localhost")) {
+    return fallbackUrl;
+  }
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+  const cleanPath = imagePath.startsWith("/") ? imagePath.slice(1) : imagePath;
+  return `${IMAGE_BASE_URL}/${cleanPath}`;
+}
+
 export default async function UserDetailPage({
   params,
 }: {
@@ -30,29 +43,25 @@ export default async function UserDetailPage({
 
   const { user, prototypes } = data;
 
+  const avatarUrl = resolveImageUrl(user.image, "https://placehold.co/400x400?text=No+Image");
+
   return (
     <main className={styles.container}>
-      {/* ユーザー情報セクション */}
+      {/* ユーザー情報 */}
       <section className={styles.section}>
-       <div className={styles.headerGroup}>
-         <div className={styles.headerProfile}>
+        <div className={styles.headerGroup}>
+          <div className={styles.headerProfile}>
             <div className={styles.avatarWrapper}>
               <img
-                src={
-                  !user.image
-                    ? "https://placehold.co/400x400?text=No+Image"
-                    : user.image.startsWith("http")
-                    ? user.image
-                    : `${IMAGE_BASE_URL}/${user.image}`
-                }
+                src={avatarUrl}
                 alt={`${user.name}のアバター`}
                 className={styles.avatarImage}
               />
             </div>
-        <h2 className={styles.heading}>{user.name}さんの情報</h2>
+            <h2 className={styles.heading}>{user.name}さんの情報</h2>
+          </div>
+          <EditButton pageUserId={user.id} />
         </div>
-         <EditButton pageUserId={user.id} />
-       </div>
 
         <table className={styles.table}>
           <tbody>
@@ -76,7 +85,7 @@ export default async function UserDetailPage({
         </table>
       </section>
 
-      {/* プロトタイプ一覧セクション */}
+      {/* プロトタイプ一覧 */}
       <section>
         <h2 className={styles.heading}>{user.name}さんのプロトタイプ</h2>
 
@@ -84,43 +93,43 @@ export default async function UserDetailPage({
           <p className={styles.emptyText}>まだプロトタイプを投稿していません。</p>
         ) : (
           <div className={styles.grid}>
-            {prototypes.map((prototype) => (
-              <div key={prototype.id} className={styles.card}>
-                <Link href={`/prototypes/${prototype.id}`}>
-                  <div className={styles.imageWrapper}>
-                    <img
-                      src={
-                        !prototype.image
-                          ? "https://placehold.co/600x400?text=No+Image"
-                          : prototype.image.startsWith("http")
-                          ? prototype.image
-                          : `${IMAGE_BASE_URL}/${prototype.image}`
-                      }
-                      alt={prototype.name}
-                      className={styles.image}
-                    />
-                  </div>
-                </Link>
+            {prototypes.map((prototype) => {
+              const prototypeImageUrl = resolveImageUrl(
+                prototype.image,
+                "https://placehold.co/600x400?text=No+Image"
+              );
 
-                <h3 className={styles.cardTitle}>{prototype.name}</h3>
-                <p className={styles.cardSlogan}>{prototype.slogan}</p>
-
-                <div className={styles.authorWrapper}>
-                  <Link
-                    href={`/users/${user.id}`}
-                    className={styles.authorLink}
-                  >
-                    by {user.name}
+              return (
+                <div key={prototype.id} className={styles.card}>
+                  <Link href={`/prototypes/${prototype.id}`}>
+                    <div className={styles.imageWrapper}>
+                      <img
+                        src={prototypeImageUrl}
+                        alt={prototype.name}
+                        className={styles.image}
+                      />
+                    </div>
                   </Link>
+
+                  <h3 className={styles.cardTitle}>{prototype.name}</h3>
+                  <p className={styles.cardSlogan}>{prototype.slogan}</p>
+
+                  <div className={styles.authorWrapper}>
+                    <Link
+                      href={`/users/${user.id}`}
+                      className={styles.authorLink}
+                    >
+                      by {user.name}
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
 
       <DeleteUserButton pageUserId={user.id} />
-
     </main>
   );
 }
