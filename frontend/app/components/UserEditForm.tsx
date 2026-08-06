@@ -182,18 +182,27 @@ export default function UserEditForm({ onSuccess }: UserEditFormProps) {
 
       <div className={styles.inputGroup}>
         <label className={styles.label}>プロフィール画像</label>
-        <div className={styles.previewWrapper}>
-          <img 
-            src={previewUrl || "https://placehold.co/400x400?text=No+Image"} 
-            alt="プレビュー" 
-            className={styles.previewImage}
-          />
-        </div>
+
+        {previewUrl && (
+          <div className={styles.previewWrapper}>
+            <img 
+              src={previewUrl || "https://placehold.co/400x400?text=No+Image"} 
+              alt="プレビュー" 
+              className={styles.previewImage}
+            />
+          </div>
+        )}
+        
+        <label htmlFor="profile-upload" className={styles.fileInputBtn}>
+          画像を選択する
+        </label>
+
         <input 
+          id="profile-upload"
           type="file" 
           accept="image/*" 
           onChange={handleImageChange} 
-          className={styles.fileInput}
+          style={{ display: 'none' }} 
         />
       </div>
 
