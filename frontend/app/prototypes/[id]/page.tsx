@@ -9,8 +9,6 @@ import DeleteButton from './DeleteButton';
 import LikeButton from '@/app/components/LikeButton';
 import BookmarkButton from '@/app/components/BookmarkButton';
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
-// const IMAGE_BASE_URL = `${API_BASE_URL}/images`;
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
   ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '') 
   : 'http://localhost:8080';
